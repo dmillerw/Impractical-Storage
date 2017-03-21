@@ -251,7 +251,7 @@ public class TileController extends TileCore {
     }
 
     public void clearInventory() {
-        for (int i=0; i<inventory.size(); i++) setInventorySlotContents(0, ItemStack.EMPTY);
+        for (int i=0; i<inventory.size(); i++) setInventorySlotContents(i, ItemStack.EMPTY);
     }
 
     public int getSlotForPosition(BlockPos pos) {
