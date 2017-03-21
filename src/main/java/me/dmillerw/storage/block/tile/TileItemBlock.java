@@ -1,0 +1,112 @@
+package me.dmillerw.storage.block.tile;
+
+import me.dmillerw.storage.block.BlockItemBlock;
+import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.common.property.IExtendedBlockState;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
+
+/**
+ * @author dmillerw
+ */
+public class TileItemBlock extends TileCore {
+
+    private String itemBlock;
+    private int itemBlockMeta;
+
+    private BlockPos controllerPos;
+
+    @Override
+    public void writeToDisk(NBTTagCompound compound) {
+        super.writeToDisk(compound);
+
+        if (controllerPos != null) compound.setLong("controller", controllerPos.toLong());
+        writeDescription(compound);
+    }
+
+    @Override
+    public void readFromDisk(NBTTagCompound compound) {
+        super.readFromDisk(compound);
+
+        if (compound.hasKey("controller")) {
+            controllerPos = BlockPos.fromLong(compound.getLong("controller"));
+        } else {
+            controllerPos = null;
+        }
+        readDescription(compound);
+    }
+
+    @Override
+    public void writeDescription(NBTTagCompound compound) {
+        super.writeDescription(compound);
+
+        if (itemBlock != null) compound.setString("itemBlock", itemBlock);
+        compound.setInteger("itemBlockMeta", itemBlockMeta);
+    }
+
+    @Override
+    public void readDescription(NBTTagCompound compound) {
+        super.readDescription(compound);
+
+        itemBlock = compound.getString("itemBlock");
+        itemBlockMeta = compound.getInteger("itemBlockMeta");
+    }
+
+    public void setController(TileController controller) {
+        this.controllerPos = controller.getPos();
+    }
+
+    private TileController getController() {
+        if (controllerPos == null || controllerPos.equals(BlockPos.ORIGIN))
+            return null;
+
+        return (TileController) world.getTileEntity(controllerPos);
+    }
+
+    public void updateItemBlock(ItemStack force) {
+        TileController controller = getController();
+        if (controller != null) {
+            ItemStack stack = force.isEmpty() ? controller.getStackForPosition(pos) : force;
+
+            if (!stack.isEmpty()) {
+                if (stack.getItem() instanceof ItemBlock) {
+                    Block block = Block.getBlockFromItem(stack.getItem());
+
+                    itemBlock = ForgeRegistries.BLOCKS.getKey(block).toString();
+                    itemBlockMeta = stack.getItemDamage();
+
+                    markDirtyAndNotify();
+
+                    return;
+                }
+            }
+        }
+
+        itemBlock = null;
+        itemBlockMeta = 0;
+
+        markDirtyAndNotify();
+    }
+
+    public ItemStack getDrop() {
+        TileController controller = getController();
+        if (controller != null) {
+            int slot = controller.getSlotForPosition(pos);
+            ItemStack drop = controller.getStackInSlot(slot).copy();
+            controller.setInventorySlotContents(slot, ItemStack.EMPTY);
+            return drop;
+        } else {
+            return ItemStack.EMPTY;
+        }
+    }
+
+    public IExtendedBlockState getExtendedBlockState(IBlockState state) {
+        return ((IExtendedBlockState)state)
+                .withProperty(BlockItemBlock.ITEM_BLOCK, itemBlock)
+                .withProperty(BlockItemBlock.ITEM_BLOCK_META, itemBlockMeta);
+    }
+}
