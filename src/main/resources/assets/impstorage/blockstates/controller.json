@@ -1,5 +1,8 @@
 {
   "variants": {
-    "normal": { "model": "impstorage:controller" }
+    "facing=north": { "model": "impstorage:controller" },
+    "facing=south": { "model": "impstorage:controller", "y": 180 },
+    "facing=west":  { "model": "impstorage:controller", "y": 270 },
+    "facing=east":  { "model": "impstorage:controller", "y": 90 }
   }
 }

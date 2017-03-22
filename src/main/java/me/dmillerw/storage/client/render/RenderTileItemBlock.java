@@ -56,22 +56,18 @@ public class RenderTileItemBlock extends TileEntitySpecialRenderer<TileItemBlock
             GlStateManager.pushMatrix();
             GlStateManager.translate(x, y, z);
 
-            for (int i=0; i<5; i++) {
-                final float angle = i == 4 ? -90 : (90 * i);
-                final float ax = (i == 4) ? 1F : 0F;
-                final float ay = (i != 4) ? 1F : 0F;
-
+            for (int i=0; i<4; i++) {
                 GlStateManager.pushMatrix();
 
                 GlStateManager.translate(.5f, .5f, .5f);
-                GlStateManager.rotate(angle, ax, ay, 0);
+                GlStateManager.rotate(90 * i, 0, 1, 0);
                 GlStateManager.translate(-.5f, -.5f, -.5f);
 
                 GlStateManager.translate(0, 1, 1);
                 GlStateManager.scale(1 / 16f, -1 / 16f, 0.00001);
 
-                GlStateManager.translate(2, 2, 0.);
-                GlStateManager.scale(0.75, 0.75, 1);
+                GlStateManager.translate(4, 4, 0.);
+                GlStateManager.scale(0.5, 0.5, 1);
 
                 GlStateManager.pushMatrix();
 

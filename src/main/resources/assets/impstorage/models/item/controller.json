@@ -1,7 +1,7 @@
 {
   "parent": "block/cube_top",
   "textures": {
-    "side": "impstorage:blocks/controller",
+    "side": "impstorage:blocks/controller_side",
     "top": "impstorage:blocks/controller_top"
   },
   "display": {
