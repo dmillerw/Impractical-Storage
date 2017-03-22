@@ -72,7 +72,7 @@ public class RenderTileItemBlock extends TileEntitySpecialRenderer<TileItemBlock
                 GlStateManager.enableRescaleNormal();
                 GlStateManager.popAttrib();
 
-                Minecraft.getMinecraft().getRenderItem().renderItemIntoGUI(te.tileRenderItem, 0, 0);
+                renderItem.renderItemIntoGUI(te.tileRenderItem, 0, 0);
 
                 GlStateManager.disableBlend();
                 GlStateManager.enableAlpha();
