@@ -3,7 +3,6 @@ package me.dmillerw.storage.block.tile;
 import me.dmillerw.storage.block.ModBlocks;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.inventory.ItemStackHelper;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -69,9 +68,6 @@ public class TileController extends TileCore {
         @Override
         public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
             if (stack.isEmpty())
-                return ItemStack.EMPTY;
-
-            if (!(stack.getItem() instanceof ItemBlock))
                 return ItemStack.EMPTY;
 
             ItemStack stackInSlot = controller.getStackInSlot(slot);

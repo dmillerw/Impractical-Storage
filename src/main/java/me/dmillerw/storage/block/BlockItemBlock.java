@@ -1,5 +1,6 @@
 package me.dmillerw.storage.block;
 
+import me.dmillerw.storage.block.property.UnlistedPropertyBoolean;
 import me.dmillerw.storage.block.property.UnlistedPropertyNumber;
 import me.dmillerw.storage.block.property.UnlistedPropertyString;
 import me.dmillerw.storage.block.tile.TileItemBlock;
@@ -30,8 +31,9 @@ import javax.annotation.Nullable;
  */
 public class BlockItemBlock extends Block implements ITileEntityProvider {
 
-    public static final UnlistedPropertyString ITEM_BLOCK = new UnlistedPropertyString("item_block");
-    public static final UnlistedPropertyNumber ITEM_BLOCK_META = new UnlistedPropertyNumber("item_block_meta");
+    public static final UnlistedPropertyBoolean IS_BLOCK = new UnlistedPropertyBoolean("is_block");
+    public static final UnlistedPropertyString RENDER_VALUE = new UnlistedPropertyString("item_block");
+    public static final UnlistedPropertyNumber RENDER_VALUE_META = new UnlistedPropertyNumber("item_block_meta");
 
     public BlockItemBlock() {
         super(Material.ROCK);
@@ -110,7 +112,7 @@ public class BlockItemBlock extends Block implements ITileEntityProvider {
 
     @Override
     protected BlockStateContainer createBlockState() {
-        return new ExtendedBlockState(this, new IProperty[0], new IUnlistedProperty[]{ITEM_BLOCK, ITEM_BLOCK_META});
+        return new ExtendedBlockState(this, new IProperty[0], new IUnlistedProperty[]{IS_BLOCK, RENDER_VALUE, RENDER_VALUE_META});
     }
 
     @Override
