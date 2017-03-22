@@ -5,6 +5,7 @@ import me.dmillerw.storage.proxy.CommonProxy;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.ItemStackHelper;
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -43,8 +44,15 @@ public class TileController extends TileCore implements ITickable {
     private static final long Y_MASK = (1L << NUM_Y_BITS) - 1L;
     private static final long Z_MASK = (1L << NUM_Z_BITS) - 1L;
 
+    private static final int MAX_BLOCK_STACK_SIZE = 1;
+    private static final int MAX_ITEM_STACK_SIZE = 16;
+
     private static long getLongFromPosition(int x, int y, int z) {
         return ((long) x & X_MASK) << X_SHIFT | ((long) y & Y_MASK) << Y_SHIFT | ((long) z & Z_MASK) << 0;
+    }
+
+    private static int getMaxStackSize(ItemStack itemStack) {
+        return itemStack.getItem() instanceof ItemBlock ? MAX_BLOCK_STACK_SIZE : MAX_ITEM_STACK_SIZE;
     }
 
     public static class ItemHandler implements IItemHandler {
@@ -79,7 +87,7 @@ public class TileController extends TileCore implements ITickable {
                 if (!ItemHandlerHelper.canItemStacksStack(stack, stackInSlot))
                     return stack;
 
-                m = Math.min(stack.getMaxStackSize(), getSlotLimit(slot)) - stackInSlot.getCount();
+                m = Math.min(stack.getMaxStackSize(), getMaxStackSize(stackInSlot)) - stackInSlot.getCount();
 
                 if (stack.getCount() <= m) {
                     if (!simulate) {
@@ -105,7 +113,7 @@ public class TileController extends TileCore implements ITickable {
                     }
                 }
             } else {
-                m = Math.min(stack.getMaxStackSize(), getSlotLimit(slot));
+                m = Math.min(stack.getMaxStackSize(), getMaxStackSize(stack));
                 if (m < stack.getCount()) {
                     // copy the stack to not modify the original one
                     stack = stack.copy();
@@ -162,7 +170,7 @@ public class TileController extends TileCore implements ITickable {
 
         @Override
         public int getSlotLimit(int slot) {
-            return 1;
+            return 64;
         }
     }
 
