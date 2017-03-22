@@ -3,7 +3,6 @@ package me.dmillerw.storage.block.tile;
 import me.dmillerw.storage.block.BlockItemBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -11,16 +10,13 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * @author dmillerw
  */
 public class TileItemBlock extends TileCore {
 
-    @SideOnly(Side.CLIENT)
-    public EntityItem tileRenderItem;
+    public ItemStack tileRenderItem;
 
     public boolean isBlock;
     public String itemBlock;
@@ -52,6 +48,8 @@ public class TileItemBlock extends TileCore {
         isBlock = compound.getBoolean("isBlock");
         itemBlock = compound.getString("itemBlock");
         itemBlockMeta = compound.getInteger("itemBlockMeta");
+
+        tileRenderItem = null;
     }
 
     public void setController(TileController controller) {
