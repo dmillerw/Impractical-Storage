@@ -46,6 +46,15 @@ public class BlockItemBlock extends Block implements ITileEntityProvider {
     }
 
     @Override
+    public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
+        if (!worldIn.isRemote) {
+            TileEntity tile = worldIn.getTileEntity(pos);
+            if (tile != null && tile instanceof TileItemBlock)
+                ((TileItemBlock) tile).updateItemBlock(ItemStack.EMPTY);
+        }
+    }
+
+    @Override
     public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
         TileEntity tile = worldIn.getTileEntity(pos);
         if (tile != null && tile instanceof TileItemBlock)

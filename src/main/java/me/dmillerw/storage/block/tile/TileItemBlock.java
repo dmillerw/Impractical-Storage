@@ -33,7 +33,10 @@ public class TileItemBlock extends TileCore {
         super.writeToDisk(compound);
 
         if (controllerPos != null) compound.setLong("controller", controllerPos.toLong());
-        writeDescription(compound);
+
+        compound.setBoolean("isBlock", isBlock);
+        if (itemBlock != null) compound.setString("itemBlock", itemBlock);
+        compound.setInteger("itemBlockMeta", itemBlockMeta);
     }
 
     @Override
@@ -45,23 +48,6 @@ public class TileItemBlock extends TileCore {
         } else {
             controllerPos = null;
         }
-        readDescription(compound);
-    }
-
-    @Override
-    public void writeDescription(NBTTagCompound compound) {
-        super.writeDescription(compound);
-
-        compound.setBoolean("isBlock", isBlock);
-        if (itemBlock != null) compound.setString("itemBlock", itemBlock);
-        compound.setInteger("itemBlockMeta", itemBlockMeta);
-
-        tileRenderItem = null;
-    }
-
-    @Override
-    public void readDescription(NBTTagCompound compound) {
-        super.readDescription(compound);
 
         isBlock = compound.getBoolean("isBlock");
         itemBlock = compound.getString("itemBlock");

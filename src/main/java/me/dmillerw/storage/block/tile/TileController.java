@@ -1,27 +1,36 @@
 package me.dmillerw.storage.block.tile;
 
 import me.dmillerw.storage.block.ModBlocks;
+import me.dmillerw.storage.proxy.CommonProxy;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Random;
 
 /**
  * @author dmillerw
  */
-public class TileController extends TileCore {
+public class TileController extends TileCore implements ITickable {
 
     private static final int NUM_X_BITS = 1 + MathHelper.log2(MathHelper.smallestEncompassingPowerOfTwo(30000000));
     private static final int NUM_Z_BITS = NUM_X_BITS;
@@ -33,13 +42,6 @@ public class TileController extends TileCore {
     private static final long X_MASK = (1L << NUM_X_BITS) - 1L;
     private static final long Y_MASK = (1L << NUM_Y_BITS) - 1L;
     private static final long Z_MASK = (1L << NUM_Z_BITS) - 1L;
-
-    private static boolean isInBounds(BlockPos pos, BlockPos pos1, BlockPos pos2) {
-//        return pos.getX() >= pos1.getX() && pos.getX() <= pos2.getX() &&
-//                pos.getY() >= pos1.getY() && pos.getY() <= pos2.getY() &&
-//                pos.getZ() >= pos2.getZ() && pos.getZ() <= pos2.getZ();
-        return true;
-    }
 
     private static long getLongFromPosition(int x, int y, int z) {
         return ((long) x & X_MASK) << X_SHIFT | ((long) y & Y_MASK) << Y_SHIFT | ((long) z & Z_MASK) << 0;
@@ -164,13 +166,19 @@ public class TileController extends TileCore {
         }
     }
 
+    private static class QueueElement {
+
+        public int slot;
+        public ItemStack itemStack;
+    }
+
+    private Random random = new Random();
+
     private ItemHandler itemHandler = new ItemHandler(this);
-    public NonNullList<ItemStack> inventory;
+    public NonNullList<ItemStack> inventory = NonNullList.create();
 
-    private boolean isReady = false;
-
-    private BlockPos origin = BlockPos.ORIGIN;
-    private BlockPos end = BlockPos.ORIGIN;
+    private BlockPos origin = null;
+    private BlockPos end = null;
 
     private int height = 1;
     private int xLength = 1;
@@ -181,40 +189,146 @@ public class TileController extends TileCore {
     // [Y][X][Z]
     private int[][][] worldToSlotMap = new int[0][0][0];
 
+    // Block Queue
+    private ArrayDeque<QueueElement> blockQueue = new ArrayDeque<>();
+    private int blockQueueTickCounter = 0;
+
     @Override
     public void writeToDisk(NBTTagCompound compound) {
-        compound.setBoolean("ready", isReady);
+        if (isReady()) {
+            compound.setLong("origin", origin.toLong());
+            compound.setLong("end", end.toLong());
 
-        if (isReady) {
-            compound.setInteger("size", totalSize);
+            compound.setInteger("height", height);
+            compound.setInteger("xLength", xLength);
+            compound.setInteger("zLength", zLength);
+
+            NBTTagList nbt_slotToWorldMap = new NBTTagList();
+            for (int i = 0; i < slotToWorldMap.length; i++) {
+                nbt_slotToWorldMap.appendTag(new NBTTagLong(slotToWorldMap[i]));
+            }
+            compound.setTag("slotToWorldMap", nbt_slotToWorldMap);
+
+            NBTTagList nbt_worldToSlotMap = new NBTTagList();
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < xLength; x++) {
+                    for (int z = 0; z < zLength; z++) {
+                        int slot = worldToSlotMap[y][x][z];
+                        if (slot != -1) {
+                            NBTTagCompound tag = new NBTTagCompound();
+
+                            tag.setInteger("_x", x);
+                            tag.setInteger("_y", y);
+                            tag.setInteger("_z", z);
+                            tag.setInteger("slot", slot);
+
+                            nbt_worldToSlotMap.appendTag(tag);
+                        }
+                    }
+                }
+            }
+            compound.setTag("worldToSlotMap", nbt_worldToSlotMap);
 
             NBTTagCompound inv = new NBTTagCompound();
             ItemStackHelper.saveAllItems(inv, inventory);
             compound.setTag("inventory", inv);
 
-            compound.setLong("origin", origin.toLong());
-            compound.setLong("end", end.toLong());
+            // Block Queue
+            NBTTagList nbt_blockQueue = new NBTTagList();
+            for (QueueElement element : blockQueue) {
+                NBTTagCompound tag = new NBTTagCompound();
+
+                tag.setInteger("slot", element.slot);
+
+                NBTTagCompound item = new NBTTagCompound();
+                element.itemStack.writeToNBT(item);
+                tag.setTag("item", item);
+
+                nbt_blockQueue.appendTag(tag);
+            }
+            compound.setTag("blockQueue", nbt_blockQueue);
+
+            compound.setInteger("blockQueueCounter", blockQueueTickCounter);
         }
     }
 
     @Override
     public void readFromDisk(NBTTagCompound compound) {
-        isReady = compound.getBoolean("ready");
+        if (compound.hasKey("origin") && compound.hasKey("end")) {
+            origin = BlockPos.fromLong(compound.getLong("origin"));
+            end = BlockPos.fromLong(compound.getLong("end"));
 
-        if (isReady) {
-            totalSize = compound.getInteger("size");
+            height = compound.getInteger("height");
+            xLength = compound.getInteger("xLength");
+            zLength = compound.getInteger("zLength");
+            totalSize = height * xLength * zLength;
+
+            inventory = NonNullList.withSize(totalSize, ItemStack.EMPTY);
+
+            slotToWorldMap = new long[totalSize];
+            NBTTagList nbt_slotToWorldMap = compound.getTagList("slotToWorldMap", Constants.NBT.TAG_LONG);
+            for (int i = 0; i < nbt_slotToWorldMap.tagCount(); i++) {
+                slotToWorldMap[i] = ((NBTTagLong) nbt_slotToWorldMap.get(i)).getLong();
+            }
+
+            worldToSlotMap = new int[height][xLength][zLength];
+            NBTTagList nbt_worldToSlotMap = compound.getTagList("worldToSlotMap", Constants.NBT.TAG_COMPOUND);
+            for (int i = 0; i < nbt_worldToSlotMap.tagCount(); i++) {
+                NBTTagCompound tag = nbt_worldToSlotMap.getCompoundTagAt(i);
+
+                int x = tag.getInteger("_x");
+                int y = tag.getInteger("_y");
+                int z = tag.getInteger("_z");
+                int slot = tag.getInteger("slot");
+
+                worldToSlotMap[y][x][z] = slot;
+            }
 
             NBTTagCompound inv = compound.getCompoundTag("inventory");
             ItemStackHelper.loadAllItems(inv, inventory);
 
-            origin = BlockPos.fromLong(compound.getLong("origin"));
-            end = BlockPos.fromLong(compound.getLong("end"));
+            // Block Queue
+            NBTTagList nbt_blockQueue = compound.getTagList("blockQueue", Constants.NBT.TAG_COMPOUND);
+            for (int i=0; i<nbt_blockQueue.tagCount(); i++) {
+                NBTTagCompound tag = nbt_blockQueue.getCompoundTagAt(i);
+                QueueElement element = new QueueElement();
+                element.slot = tag.getInteger("slot");
+                element.itemStack = new ItemStack(tag.getCompoundTag("item"));
+                blockQueue.add(element);
+            }
 
-            updateBounds(origin, end, false);
+            blockQueueTickCounter = compound.getInteger("blockQueueCounter");
         }
     }
 
-    public void updateBounds(BlockPos pos1, BlockPos pos2, boolean initInventory) {
+    @Override
+    public void update() {
+        if (!world.isRemote) {
+            if (CommonProxy.useBlockQueue()) {
+                blockQueueTickCounter++;
+
+                if (blockQueueTickCounter >= CommonProxy.blockUpdateRate) {
+                    for (int i=0; i<Math.min(blockQueue.size(), CommonProxy.blockUpdateBatch); i++) {
+                        QueueElement element = blockQueue.pop();
+                        setBlock(element.slot, element.itemStack);
+                    }
+
+                    blockQueueTickCounter = 0;
+                }
+            }
+        }
+    }
+
+    private boolean isReady() {
+        return origin != null && end != null;
+    }
+
+    public void setBounds(BlockPos pos1, BlockPos pos2) {
+        if (origin != null && end != null) {
+            dropInventory();
+            clearInventory();
+        }
+
         origin = pos1.subtract(pos);
         end = pos2.subtract(pos);
 
@@ -224,44 +338,42 @@ public class TileController extends TileCore {
 
         totalSize = height * xLength * zLength;
 
-        initializeArrays(initInventory);
-    }
-
-    private void initializeArrays(boolean initInventory) {
-        if (initInventory) inventory = NonNullList.withSize(totalSize, ItemStack.EMPTY);
+        inventory = NonNullList.withSize(totalSize, ItemStack.EMPTY);
 
         slotToWorldMap = new long[totalSize];
         worldToSlotMap = new int[height][xLength][zLength];
 
-        int slot = 0;
-        for (int y = 0; y < height; y++) {
-            for (int z = 0; z < zLength; z++) {
-                for (int x = 0; x < xLength; x++) {
-                    slotToWorldMap[slot] = getLongFromPosition(x, y, z);
-                    worldToSlotMap[y][x][z] = slot;
+        if (CommonProxy.organizedStorage) {
+            int slot = 0;
+            for (int y = 0; y < height; y++) {
+                for (int z = 0; z < zLength; z++) {
+                    for (int x = 0; x < xLength; x++) {
+                        slotToWorldMap[slot] = getLongFromPosition(x, y, z);
+                        worldToSlotMap[y][x][z] = slot;
 
-                    slot++;
+                        slot++;
+                    }
                 }
             }
+        } else {
+            Arrays.fill(slotToWorldMap, -1);
         }
     }
 
+    public void dropInventory() {
+        for (ItemStack item : this.inventory)
+            InventoryHelper.spawnItemStack(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, item);
+    }
+
     public void clearInventory() {
-        for (int i=0; i<inventory.size(); i++) setInventorySlotContents(i, ItemStack.EMPTY);
+        for (int i = 0; i < inventory.size(); i++)
+            setInventorySlotContents(i, ItemStack.EMPTY);
     }
 
     public int getSlotForPosition(BlockPos pos) {
         try {
-            pos = pos.subtract(this.pos);
-
-            if (!isInBounds(pos, origin, end))
-                return -1;
-
-            int x = pos.subtract(origin).getX();
-            int y = pos.subtract(origin).getY();
-            int z = pos.subtract(origin).getZ();
-
-            return worldToSlotMap[y][x][z];
+            pos = pos.subtract(this.pos).subtract(origin);
+            return worldToSlotMap[pos.getY()][pos.getX()][pos.getZ()];
         } catch (Exception ex) {
             return 0;
         }
@@ -275,11 +387,50 @@ public class TileController extends TileCore {
         return inventory.get(slot);
     }
 
+    private BlockPos getNextRandomPosition() {
+        int x = random.nextInt(xLength);
+        int y = height - 1;
+        int z = random.nextInt(zLength);
+
+        BlockPos pos = new BlockPos(x, y, z).add(origin).add(getPos());
+        while (world.isAirBlock(pos)) pos = pos.down();
+        pos = pos.up();
+        pos = pos.subtract(origin).subtract(getPos());
+
+        if (pos.getY() > y)
+            return getNextRandomPosition();
+
+        return pos;
+    }
+
     public void setInventorySlotContents(int slot, ItemStack itemStack) {
-        BlockPos pos = BlockPos.fromLong(slotToWorldMap[slot]).add(origin).add(getPos());
-        IBlockState state = world.getBlockState(pos);
+        if (!CommonProxy.organizedStorage) {
+            long longPos = slotToWorldMap[slot];
+            if (longPos == -1) {
+                BlockPos pos = getNextRandomPosition();
+
+                slotToWorldMap[slot] = pos.toLong();
+                worldToSlotMap[pos.getY()][pos.getX()][pos.getZ()] = slot;
+            }
+        }
 
         inventory.set(slot, itemStack);
+
+        if (CommonProxy.useBlockQueue()) {
+            blockQueueTickCounter = 0;
+
+            QueueElement element = new QueueElement();
+            element.slot = slot;
+            element.itemStack = itemStack;
+            blockQueue.add(element);
+        } else {
+            setBlock(slot, itemStack);
+        }
+    }
+
+    private void setBlock(int slot, ItemStack itemStack) {
+        BlockPos pos = BlockPos.fromLong(slotToWorldMap[slot]).add(origin).add(getPos());
+        IBlockState state = world.getBlockState(pos);
 
         if (itemStack.isEmpty()) {
             if (state != null && state.getBlock() == ModBlocks.item_block) {
@@ -303,13 +454,14 @@ public class TileController extends TileCore {
 
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
-        return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY;
+        return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && isReady();
     }
 
     @Nullable
     @Override
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
-        if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) return (T) itemHandler;
+        if (isReady())
+            if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) return (T) itemHandler;
         return super.getCapability(capability, facing);
     }
 }

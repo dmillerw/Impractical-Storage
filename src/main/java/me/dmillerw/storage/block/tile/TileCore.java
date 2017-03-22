@@ -34,14 +34,6 @@ public class TileCore extends TileEntity {
 
     }
 
-    public void writeDescription(NBTTagCompound compound) {
-
-    }
-
-    public void readDescription(NBTTagCompound compound) {
-
-    }
-
     public void markDirtyAndNotify() {
         markDirty();
 
@@ -56,14 +48,22 @@ public class TileCore extends TileEntity {
     @Nullable
     @Override
     public SPacketUpdateTileEntity getUpdatePacket() {
-        NBTTagCompound compound = new NBTTagCompound();
-        writeDescription(compound);
-        return new SPacketUpdateTileEntity(pos, 0, compound);
+        return new SPacketUpdateTileEntity(pos, 0, getUpdateTag());
     }
 
     @Override
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-        readDescription(pkt.getNbtCompound());
+        handleUpdateTag(pkt.getNbtCompound());
+    }
+
+    @Override
+    public NBTTagCompound getUpdateTag() {
+        return this.writeToNBT(new NBTTagCompound());
+    }
+
+    @Override
+    public void handleUpdateTag(NBTTagCompound tag) {
+        this.readFromNBT(tag);
         world.markBlockRangeForRenderUpdate(pos, pos);
     }
 }

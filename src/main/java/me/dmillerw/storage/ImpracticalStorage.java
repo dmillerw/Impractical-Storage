@@ -2,11 +2,14 @@ package me.dmillerw.storage;
 
 import me.dmillerw.storage.lib.ModInfo;
 import me.dmillerw.storage.proxy.IProxy;
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+
+import java.io.File;
 
 /**
  * @author dmillerw
@@ -24,6 +27,14 @@ public class ImpracticalStorage {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        Configuration configuration = new Configuration(new File(event.getModConfigurationDirectory(), "ImpracticalStorage.cfg"));
+
+        proxy.readConfigurationFile(configuration);
+
+        if (configuration.hasChanged()) {
+            configuration.save();
+        }
+
         proxy.preInit(event);
     }
 

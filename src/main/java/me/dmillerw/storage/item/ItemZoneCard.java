@@ -136,7 +136,7 @@ public class ItemZoneCard extends Item {
                 if (state.getBlock() == ModBlocks.controller) {
                     TileEntity tile = world.getTileEntity(pos);
                     if (tile != null) {
-                        ((TileController)tile).updateBounds(getPositionOne(itemStack), getPositionTwo(itemStack), true);
+                        ((TileController)tile).setBounds(getPositionOne(itemStack), getPositionTwo(itemStack));
 
                         player.sendMessage(new TextComponentString("Updated Controller bounds"));
 
