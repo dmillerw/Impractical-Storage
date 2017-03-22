@@ -43,10 +43,14 @@ public class TileController extends TileCore implements ITickable {
     private static final long Z_MASK = (1L << NUM_Z_BITS) - 1L;
 
     private static final int MAX_BLOCK_STACK_SIZE = 1;
-    private static final int MAX_ITEM_STACK_SIZE = 1;
+    private static final int MAX_ITEM_STACK_SIZE = 16;
 
     private static long getLongFromPosition(int x, int y, int z) {
         return ((long) x & X_MASK) << X_SHIFT | ((long) y & Y_MASK) << Y_SHIFT | ((long) z & Z_MASK) << 0;
+    }
+
+    private static int getMaxStackSize(ItemStack itemStack) {
+        return itemStack.getItem() instanceof ItemBlock ? MAX_BLOCK_STACK_SIZE : MAX_ITEM_STACK_SIZE;
     }
 
     public static class ItemHandler implements IItemHandler {
@@ -79,8 +83,7 @@ public class TileController extends TileCore implements ITickable {
                 if (!ItemHandlerHelper.canItemStacksStack(stack, stackInSlot))
                     return stack;
 
-                m = stack.getItem() instanceof ItemBlock ? MAX_BLOCK_STACK_SIZE : MAX_ITEM_STACK_SIZE;
-                m -= stackInSlot.stackSize;
+                m = Math.min(stack.getMaxStackSize(), getMaxStackSize(stackInSlot)) - stackInSlot.stackSize;
 
                 if (stack.stackSize <= m) {
                     if (!simulate) {
@@ -106,7 +109,7 @@ public class TileController extends TileCore implements ITickable {
                     }
                 }
             } else {
-                m = stack.getItem() instanceof ItemBlock ? MAX_BLOCK_STACK_SIZE : MAX_ITEM_STACK_SIZE;
+                m = Math.min(stack.getMaxStackSize(), getMaxStackSize(stack));
                 if (m < stack.stackSize) {
                     // copy the stack to not modify the original one
                     stack = stack.copy();
