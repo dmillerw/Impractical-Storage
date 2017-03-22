@@ -105,9 +105,10 @@ public class TileItemBlock extends TileCore {
         TileController controller = getController();
         if (controller != null) {
             int slot = controller.getSlotForPosition(pos);
-            //TODO: NPE on shift-right-click to drop contents
-            // at me.dmillerw.storage.block.tile.TileItemBlock.getDrop(TileItemBlock.java:108) ~[TileItemBlock.class:?]
-            ItemStack drop = controller.getStackInSlot(slot).copy();
+
+            ItemStack drop = controller.getStackInSlot(slot);
+            if (drop != null && drop.stackSize > 0) drop = drop.copy();
+
             controller.setInventorySlotContents(slot, null);
             return drop;
         } else {
