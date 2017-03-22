@@ -37,12 +37,8 @@ public class TileCore extends TileEntity {
     public void markDirtyAndNotify() {
         markDirty();
 
-        IBlockState state = world.getBlockState(pos);
-        world.notifyBlockUpdate(pos, state, state, 3);
-    }
-
-    public void notifyNeighbors() {
-        world.notifyNeighborsOfStateChange(pos, blockType, true);
+        IBlockState state = worldObj.getBlockState(pos);
+        worldObj.notifyBlockUpdate(pos, state, state, 3);
     }
 
     @Nullable
@@ -64,6 +60,6 @@ public class TileCore extends TileEntity {
     @Override
     public void handleUpdateTag(NBTTagCompound tag) {
         this.readFromNBT(tag);
-        world.markBlockRangeForRenderUpdate(pos, pos);
+        worldObj.markBlockRangeForRenderUpdate(pos, pos);
     }
 }

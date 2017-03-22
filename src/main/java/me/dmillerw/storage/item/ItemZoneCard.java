@@ -91,7 +91,7 @@ public class ItemZoneCard extends Item {
     }
 
     @Override
-    public EnumActionResult onItemUseFirst(EntityPlayer player, World world, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ, EnumHand hand) {
+    public EnumActionResult onItemUseFirst(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ, EnumHand hand) {
         if (!world.isRemote) {
             ItemStack itemStack = player.getHeldItem(hand);
             if (player.isSneaking()) {
@@ -100,14 +100,14 @@ public class ItemZoneCard extends Item {
 
                     setPositionOne(itemStack, pos);
 
-                    player.sendMessage(new TextComponentString("Set position 1 to " + pos));
+                    player.addChatMessage(new TextComponentString("Set position 1 to " + pos));
 
                     return EnumActionResult.SUCCESS;
                 } else if (isInProgress(itemStack)) {
                     BlockPos pos1 = getPositionOne(itemStack);
                     BlockPos pos2 = pos.offset(side);
 
-                    player.sendMessage(new TextComponentString("Set position 2 to " + pos));
+                    player.addChatMessage(new TextComponentString("Set position 2 to " + pos));
 
                     BlockPos npos1 = new BlockPos(
                             Math.min(pos1.getX(), pos2.getX()),
@@ -138,7 +138,7 @@ public class ItemZoneCard extends Item {
                     if (tile != null) {
                         ((TileController)tile).setBounds(getPositionOne(itemStack), getPositionTwo(itemStack));
 
-                        player.sendMessage(new TextComponentString("Updated Controller bounds"));
+                        player.addChatMessage(new TextComponentString("Updated Controller bounds"));
 
                         return EnumActionResult.SUCCESS;
                     }

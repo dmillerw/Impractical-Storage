@@ -1,10 +1,11 @@
 package me.dmillerw.storage.block.tile;
 
 import me.dmillerw.storage.block.ModBlocks;
+import me.dmillerw.storage.lib.minecraft.ItemStackHelper;
+import me.dmillerw.storage.lib.minecraft.MathHelper_1_11;
 import me.dmillerw.storage.proxy.CommonProxy;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -12,9 +13,7 @@ import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -32,7 +31,7 @@ import java.util.Random;
  */
 public class TileController extends TileCore implements ITickable {
 
-    private static final int NUM_X_BITS = 1 + MathHelper.log2(MathHelper.smallestEncompassingPowerOfTwo(30000000));
+    private static final int NUM_X_BITS = 1 + MathHelper_1_11.log2(MathHelper_1_11.smallestEncompassingPowerOfTwo(30000000));
     private static final int NUM_Z_BITS = NUM_X_BITS;
     private static final int NUM_Y_BITS = 64 - NUM_X_BITS - NUM_Z_BITS;
 
@@ -66,47 +65,46 @@ public class TileController extends TileCore implements ITickable {
             return controller.getStackInSlot(slot);
         }
 
-        @Nonnull
         @Override
-        public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
-            if (stack.isEmpty())
-                return ItemStack.EMPTY;
+        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+            if (stack == null || stack.stackSize <= 0)
+                return null;
 
             ItemStack stackInSlot = controller.getStackInSlot(slot);
 
             int m;
-            if (!stackInSlot.isEmpty()) {
+            if (stackInSlot != null) {
                 if (!ItemHandlerHelper.canItemStacksStack(stack, stackInSlot))
                     return stack;
 
-                m = Math.min(stack.getMaxStackSize(), getSlotLimit(slot)) - stackInSlot.getCount();
+                m = stack.getMaxStackSize() - stackInSlot.stackSize;
 
-                if (stack.getCount() <= m) {
+                if (stack.stackSize <= m) {
                     if (!simulate) {
                         ItemStack copy = stack.copy();
-                        copy.grow(stackInSlot.getCount());
+                        copy.stackSize += stackInSlot.stackSize;
                         controller.setInventorySlotContents(slot, copy);
                         controller.markDirty();
                     }
 
-                    return ItemStack.EMPTY;
+                    return null;
                 } else {
                     // copy the stack to not modify the original one
                     stack = stack.copy();
                     if (!simulate) {
                         ItemStack copy = stack.splitStack(m);
-                        copy.grow(stackInSlot.getCount());
+                        copy.stackSize += stackInSlot.stackSize;
                         controller.setInventorySlotContents(slot, copy);
                         controller.markDirty();
                         return stack;
                     } else {
-                        stack.shrink(m);
+                        stack.stackSize -= m;
                         return stack;
                     }
                 }
             } else {
-                m = Math.min(stack.getMaxStackSize(), getSlotLimit(slot));
-                if (m < stack.getCount()) {
+                m = stack.getMaxStackSize();
+                if (m < stack.stackSize) {
                     // copy the stack to not modify the original one
                     stack = stack.copy();
                     if (!simulate) {
@@ -114,7 +112,7 @@ public class TileController extends TileCore implements ITickable {
                         controller.markDirty();
                         return stack;
                     } else {
-                        stack.shrink(m);
+                        stack.stackSize -= m;
                         return stack;
                     }
                 } else {
@@ -122,7 +120,7 @@ public class TileController extends TileCore implements ITickable {
                         controller.setInventorySlotContents(slot, stack);
                         controller.markDirty();
                     }
-                    return ItemStack.EMPTY;
+                    return null;
                 }
             }
         }
@@ -133,23 +131,23 @@ public class TileController extends TileCore implements ITickable {
             slot = getSlots() - slot - 1;
 
             if (amount == 0)
-                return ItemStack.EMPTY;
+                return null;
 
             ItemStack stackInSlot = controller.getStackInSlot(slot);
 
-            if (stackInSlot.isEmpty())
-                return ItemStack.EMPTY;
+            if (stackInSlot == null || stackInSlot.stackSize <= 0)
+                return null;
 
             if (simulate) {
-                if (stackInSlot.getCount() < amount) {
+                if (stackInSlot.stackSize < amount) {
                     return stackInSlot.copy();
                 } else {
                     ItemStack copy = stackInSlot.copy();
-                    copy.setCount(amount);
+                    copy.stackSize = amount;
                     return copy;
                 }
             } else {
-                int m = Math.min(stackInSlot.getCount(), amount);
+                int m = Math.min(stackInSlot.stackSize, amount);
                 ItemStack old = controller.getStackInSlot(slot);
                 ItemStack decr = old.splitStack(m);
 
@@ -158,11 +156,6 @@ public class TileController extends TileCore implements ITickable {
 
                 return decr;
             }
-        }
-
-        @Override
-        public int getSlotLimit(int slot) {
-            return 1;
         }
     }
 
@@ -175,7 +168,7 @@ public class TileController extends TileCore implements ITickable {
     private Random random = new Random();
 
     private ItemHandler itemHandler = new ItemHandler(this);
-    public NonNullList<ItemStack> inventory = NonNullList.create();
+    public ItemStack[] inventory = new ItemStack[0];
 
     private BlockPos origin = null;
     private BlockPos end = null;
@@ -263,7 +256,7 @@ public class TileController extends TileCore implements ITickable {
             zLength = compound.getInteger("zLength");
             totalSize = height * xLength * zLength;
 
-            inventory = NonNullList.withSize(totalSize, ItemStack.EMPTY);
+            inventory = new ItemStack[totalSize];
 
             slotToWorldMap = new long[totalSize];
             NBTTagList nbt_slotToWorldMap = compound.getTagList("slotToWorldMap", Constants.NBT.TAG_LONG);
@@ -293,7 +286,7 @@ public class TileController extends TileCore implements ITickable {
                 NBTTagCompound tag = nbt_blockQueue.getCompoundTagAt(i);
                 QueueElement element = new QueueElement();
                 element.slot = tag.getInteger("slot");
-                element.itemStack = new ItemStack(tag.getCompoundTag("item"));
+                element.itemStack = ItemStack.loadItemStackFromNBT(tag.getCompoundTag("item"));
                 blockQueue.add(element);
             }
 
@@ -303,7 +296,7 @@ public class TileController extends TileCore implements ITickable {
 
     @Override
     public void update() {
-        if (!world.isRemote) {
+        if (!worldObj.isRemote) {
             if (CommonProxy.useBlockQueue()) {
                 blockQueueTickCounter++;
 
@@ -338,7 +331,7 @@ public class TileController extends TileCore implements ITickable {
 
         totalSize = height * xLength * zLength;
 
-        inventory = NonNullList.withSize(totalSize, ItemStack.EMPTY);
+        inventory = new ItemStack[totalSize];
 
         slotToWorldMap = new long[totalSize];
         worldToSlotMap = new int[height][xLength][zLength];
@@ -362,12 +355,12 @@ public class TileController extends TileCore implements ITickable {
 
     public void dropInventory() {
         for (ItemStack item : this.inventory)
-            InventoryHelper.spawnItemStack(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, item);
+            InventoryHelper.spawnItemStack(worldObj, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, item);
     }
 
     public void clearInventory() {
-        for (int i = 0; i < inventory.size(); i++)
-            setInventorySlotContents(i, ItemStack.EMPTY);
+        for (int i = 0; i < inventory.length; i++)
+            setInventorySlotContents(i, null);
     }
 
     public int getSlotForPosition(BlockPos pos) {
@@ -384,7 +377,7 @@ public class TileController extends TileCore implements ITickable {
     }
 
     public ItemStack getStackInSlot(int slot) {
-        return inventory.get(slot);
+        return inventory[slot];
     }
 
     private BlockPos getNextRandomPosition() {
@@ -393,7 +386,7 @@ public class TileController extends TileCore implements ITickable {
         int z = random.nextInt(zLength);
 
         BlockPos pos = new BlockPos(x, y, z).add(origin).add(getPos());
-        while (world.isAirBlock(pos)) pos = pos.down();
+        while (worldObj.isAirBlock(pos)) pos = pos.down();
         pos = pos.up();
         pos = pos.subtract(origin).subtract(getPos());
 
@@ -414,7 +407,7 @@ public class TileController extends TileCore implements ITickable {
             }
         }
 
-        inventory.set(slot, itemStack);
+        inventory[slot] = itemStack;
 
         if (CommonProxy.useBlockQueue()) {
             blockQueueTickCounter = 0;
@@ -430,20 +423,20 @@ public class TileController extends TileCore implements ITickable {
 
     private void setBlock(int slot, ItemStack itemStack) {
         BlockPos pos = BlockPos.fromLong(slotToWorldMap[slot]).add(origin).add(getPos());
-        IBlockState state = world.getBlockState(pos);
+        IBlockState state = worldObj.getBlockState(pos);
 
-        if (itemStack.isEmpty()) {
+        if (itemStack == null || itemStack.stackSize <= 0) {
             if (state != null && state.getBlock() == ModBlocks.item_block) {
-                world.setBlockToAir(pos);
+                worldObj.setBlockToAir(pos);
             }
         } else {
             if (state != null && state.getBlock() == ModBlocks.item_block) {
-                TileEntity tile = world.getTileEntity(pos);
+                TileEntity tile = worldObj.getTileEntity(pos);
                 if (tile != null && tile instanceof TileItemBlock)
                     ((TileItemBlock) tile).updateItemBlock(itemStack);
             } else {
-                world.setBlockState(pos, ModBlocks.item_block.getDefaultState());
-                TileEntity tile = world.getTileEntity(pos);
+                worldObj.setBlockState(pos, ModBlocks.item_block.getDefaultState());
+                TileEntity tile = worldObj.getTileEntity(pos);
                 if (tile != null && tile instanceof TileItemBlock) {
                     ((TileItemBlock) tile).setController(this);
                     ((TileItemBlock) tile).updateItemBlock(itemStack);

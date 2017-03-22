@@ -50,15 +50,15 @@ public class BlockItemBlock extends Block implements ITileEntityProvider {
         if (!worldIn.isRemote) {
             TileEntity tile = worldIn.getTileEntity(pos);
             if (tile != null && tile instanceof TileItemBlock)
-                ((TileItemBlock) tile).updateItemBlock(ItemStack.EMPTY);
+                ((TileItemBlock) tile).updateItemBlock(null);
         }
     }
 
     @Override
-    public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
+    public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn) {
         TileEntity tile = worldIn.getTileEntity(pos);
         if (tile != null && tile instanceof TileItemBlock)
-            ((TileItemBlock) tile).updateItemBlock(ItemStack.EMPTY);
+            ((TileItemBlock) tile).updateItemBlock(null);
     }
 
     @Override
@@ -71,13 +71,13 @@ public class BlockItemBlock extends Block implements ITileEntityProvider {
     }
 
     @Override
-    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, @Nullable ItemStack heldItem, EnumFacing side, float hitX, float hitY, float hitZ) {
         if (!worldIn.isRemote) {
             if (playerIn.isSneaking()) {
                 TileEntity tile = worldIn.getTileEntity(pos);
                 if (tile != null) {
                     ItemStack drop = ((TileItemBlock)tile).getDrop();
-                    if (!drop.isEmpty())
+                    if (drop != null && drop.stackSize > 0)
                         InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), drop);
                 }
 

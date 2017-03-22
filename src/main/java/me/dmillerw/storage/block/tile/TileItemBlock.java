@@ -62,15 +62,15 @@ public class TileItemBlock extends TileCore {
         if (controllerPos == null || controllerPos.equals(BlockPos.ORIGIN))
             return null;
 
-        return (TileController) world.getTileEntity(controllerPos);
+        return (TileController) worldObj.getTileEntity(controllerPos);
     }
 
     public void updateItemBlock(ItemStack force) {
         TileController controller = getController();
         if (controller != null) {
-            ItemStack stack = force.isEmpty() ? controller.getStackForPosition(pos) : force;
+            ItemStack stack = (force == null || force.stackSize <= 0) ? controller.getStackForPosition(pos) : force;
 
-            if (!stack.isEmpty()) {
+            if (stack != null && stack.stackSize > 0) {
                 if (stack.getItem() instanceof ItemBlock) {
                     Block block = Block.getBlockFromItem(stack.getItem());
 
@@ -105,11 +105,13 @@ public class TileItemBlock extends TileCore {
         TileController controller = getController();
         if (controller != null) {
             int slot = controller.getSlotForPosition(pos);
+            //TODO: NPE on shift-right-click to drop contents
+            // at me.dmillerw.storage.block.tile.TileItemBlock.getDrop(TileItemBlock.java:108) ~[TileItemBlock.class:?]
             ItemStack drop = controller.getStackInSlot(slot).copy();
-            controller.setInventorySlotContents(slot, ItemStack.EMPTY);
+            controller.setInventorySlotContents(slot, null);
             return drop;
         } else {
-            return ItemStack.EMPTY;
+            return null;
         }
     }
 
