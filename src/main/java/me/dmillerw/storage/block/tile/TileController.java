@@ -509,7 +509,7 @@ public class TileController extends TileCore implements ITickable {
 
     public void dropInventory() {
         for (ItemStack item : this.inventory)
-            InventoryHelper.spawnItemStack(getWorld(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, item);
+            if (!ItemStackHelper.isEmpty(item)) InventoryHelper.spawnItemStack(getWorld(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, item);
     }
 
     public void clearInventory() {
@@ -555,7 +555,7 @@ public class TileController extends TileCore implements ITickable {
     }
 
     public void setInventorySlotContents(int slot, ItemStack itemStack) {
-        if (ItemStackHelper.isEmpty(itemStack)) {
+        if (!ItemStackHelper.isEmpty(itemStack)) {
             if (!CommonProxy.organizedStorage) {
                 long longPos = slotToWorldMap[slot];
                 if (longPos == -1) {
