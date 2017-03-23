@@ -2,6 +2,7 @@ package me.dmillerw.storage.block;
 
 import me.dmillerw.storage.block.tile.TileController;
 import me.dmillerw.storage.lib.ModInfo;
+import me.dmillerw.storage.lib.ModTab;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.ITileEntityProvider;
@@ -10,7 +11,6 @@ import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -34,7 +34,7 @@ public class BlockController extends Block implements ITileEntityProvider {
 
         setDefaultState(blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
 
-        setCreativeTab(CreativeTabs.MISC);
+        setCreativeTab(ModTab.TAB);
         setUnlocalizedName(ModInfo.ID + ":controller");
     }
 
