@@ -1,6 +1,7 @@
 package me.dmillerw.storage.block;
 
 import me.dmillerw.storage.block.tile.TileController;
+import me.dmillerw.storage.core.handler.GuiHandler;
 import me.dmillerw.storage.lib.ModInfo;
 import me.dmillerw.storage.lib.ModTab;
 import net.minecraft.block.Block;
@@ -12,9 +13,11 @@ import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
@@ -38,6 +41,7 @@ public class BlockController extends Block implements ITileEntityProvider {
         setUnlocalizedName(ModInfo.ID + ":controller");
     }
 
+    @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
         EnumFacing facing = placer.getHorizontalFacing();
         worldIn.setBlockState(pos, state.withProperty(FACING, facing), 2);
@@ -45,6 +49,12 @@ public class BlockController extends Block implements ITileEntityProvider {
         TileEntity tile = worldIn.getTileEntity(pos);
         if (tile != null && tile instanceof TileController)
             ((TileController) tile).initialize(facing);
+    }
+
+    @Override
+    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+        GuiHandler.Gui.CONTROLLER.openGui(playerIn, pos);
+        return true;
     }
 
     @Override

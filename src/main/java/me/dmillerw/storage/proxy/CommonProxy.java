@@ -3,6 +3,7 @@ package me.dmillerw.storage.proxy;
 import me.dmillerw.storage.block.ModBlocks;
 import me.dmillerw.storage.block.tile.TileController;
 import me.dmillerw.storage.block.tile.TileItemBlock;
+import me.dmillerw.storage.core.handler.GuiHandler;
 import me.dmillerw.storage.lib.ModInfo;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -22,20 +23,15 @@ public class CommonProxy implements IProxy {
     public static final String CATEGORY_BLOCK_QUEUE = "block_queue";
     public static final String CATEGORY_RATES = "rates";
 
-    public static int defaultMinX = 4;
-    public static int defaultMinY = 1;
-    public static int defaultMinZ = 1;
-
-    public static int defaultMaxX = 4;
-    public static int defaultMaxY = 8;
-    public static int defaultMaxZ = 8;
+    public static int defaultX = 8;
+    public static int defaultY = 8;
+    public static int defaultZ = 8;
 
     public static int maxX = 64;
     public static int maxY = 64;
     public static int maxZ = 64;
 
     public static boolean dropBlocks = false;
-    public static boolean organizedStorage = false;
 
     public static int blockUpdateBatch = -1;
     public static int blockUpdateRate = -1;
@@ -48,6 +44,8 @@ public class CommonProxy implements IProxy {
 
     @Override
     public void preInit(FMLPreInitializationEvent event) {
+        GuiHandler.register();
+
         GameRegistry.registerTileEntity(TileItemBlock.class, ModInfo.ID + ":item_block");
         GameRegistry.registerTileEntity(TileController.class, ModInfo.ID + ":controller");
 
@@ -104,18 +102,9 @@ public class CommonProxy implements IProxy {
                 "Total max size on the Y axis a Controller zone can take up"
         );
 
-        defaultMinX = getBound(configuration, "defaultMinX", 4, 1, maxX);
-        defaultMinY = getBound(configuration, "defaultMinY", 1, 1, maxX);
-        defaultMinZ = getBound(configuration, "defaultMinZ", 1, 1, maxX);
-        defaultMaxX = getBound(configuration, "defaultMaxX", 4, 1, maxX);
-        defaultMaxY = getBound(configuration, "defaultMaxY", 8, 1, maxX);
-        defaultMaxZ = getBound(configuration, "defaultMaxZ", 8, 1, maxX);
-
-        organizedStorage = configuration.getBoolean(
-                "organizedStorage",
-                Configuration.CATEGORY_GENERAL,
-                false,
-                "Whether Blocks/Items stored should be presented in neat rows, or in a more haphazard fashion");
+        defaultX = getBound(configuration, "defaultX", 8, 1, maxX);
+        defaultY = getBound(configuration, "defaultY", 8, 1, maxY);
+        defaultZ = getBound(configuration, "defaultZ", 8, 1, maxZ);
 
         dropBlocks = configuration.getBoolean(
                 "dropBlocks",

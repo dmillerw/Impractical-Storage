@@ -1,6 +1,8 @@
 package me.dmillerw.storage.block.tile;
 
+import me.dmillerw.storage.block.BlockController;
 import me.dmillerw.storage.block.ModBlocks;
+import me.dmillerw.storage.lib.data.SortingType;
 import me.dmillerw.storage.proxy.CommonProxy;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -188,10 +190,16 @@ public class TileController extends TileCore implements ITickable {
     public BlockPos origin = null;
     public BlockPos end = null;
 
+    public int rawX = CommonProxy.defaultX;
+    public int rawY = CommonProxy.defaultY;
+    public int rawZ = CommonProxy.defaultZ;
+
     public int height = 1;
     public int xLength = 1;
     public int zLength = 1;
     private int totalSize;
+
+    public SortingType sortingType = SortingType.ROWS;
 
     private int scanCounter = 0;
 
@@ -213,9 +221,15 @@ public class TileController extends TileCore implements ITickable {
             compound.setLong("origin", origin.toLong());
             compound.setLong("end", end.toLong());
 
+            compound.setInteger("rawX", rawX);
+            compound.setInteger("rawY", rawY);
+            compound.setInteger("rawZ", rawZ);
+
             compound.setInteger("height", height);
             compound.setInteger("xLength", xLength);
             compound.setInteger("zLength", zLength);
+
+            compound.setInteger("sortingType", sortingType.ordinal());
 
             compound.setBoolean("showBounds", showBounds);
 
@@ -292,10 +306,16 @@ public class TileController extends TileCore implements ITickable {
             origin = BlockPos.fromLong(compound.getLong("origin"));
             end = BlockPos.fromLong(compound.getLong("end"));
 
+            rawX = compound.getInteger("rawX");
+            rawY = compound.getInteger("rawY");
+            rawZ = compound.getInteger("rawZ");
+
             height = compound.getInteger("height");
             xLength = compound.getInteger("xLength");
             zLength = compound.getInteger("zLength");
             totalSize = height * xLength * zLength;
+
+            sortingType = SortingType.VALUES[compound.getInteger("sortingType")];
 
             showBounds = compound.getBoolean("showBounds");
 
@@ -352,34 +372,18 @@ public class TileController extends TileCore implements ITickable {
     public void initialize(EnumFacing facing) {
         if (!world.isRemote) {
             if (facing != null) {
-                EnumFacing posX = facing.rotateY();
-                EnumFacing negX = posX.getOpposite();
-
-                BlockPos origin = new BlockPos(pos);
-                origin = origin.offset(negX, CommonProxy.defaultMinX);
-                origin = origin.offset(EnumFacing.UP, CommonProxy.defaultMinY - 1);
-                origin = origin.offset(facing, CommonProxy.defaultMinY);
-
-                BlockPos end = new BlockPos(pos);
-                end = end.offset(posX, CommonProxy.defaultMaxX);
-                end = end.offset(EnumFacing.UP, CommonProxy.defaultMaxY - 1);
-                end = end.offset(facing, CommonProxy.defaultMaxZ);
-
-                BlockPos low = new BlockPos(
-                        Math.min(origin.getX(), end.getX()),
-                        Math.min(origin.getY(), end.getY()),
-                        Math.min(origin.getZ(), end.getZ())
-                );
-
-                BlockPos high = new BlockPos(
-                        Math.max(origin.getX(), end.getX()),
-                        Math.max(origin.getY(), end.getY()),
-                        Math.max(origin.getZ(), end.getZ())
-                );
-
-                setBounds(low, high);
+                updateRawBounds(facing, rawX, rawY, rawZ);
             }
         }
+    }
+
+    public void setShowBounds(boolean showBounds) {
+        this.showBounds = showBounds;
+    }
+
+    public void setSortingType(SortingType sortingType) {
+        this.sortingType = sortingType;
+        this.updateRawBounds(world.getBlockState(pos).getValue(BlockController.FACING), rawX, rawY, rawZ);
     }
 
     @Override
@@ -407,14 +411,14 @@ public class TileController extends TileCore implements ITickable {
                                 IBlockState state = world.getBlockState(pos);
                                 Block block = state.getBlock();
 
-                                if (block != ModBlocks.item_block && !world.isAirBlock(pos)) {
+                                if (block != ModBlocks.controller && block != ModBlocks.item_block && !world.isAirBlock(pos)) {
                                     ItemStack stack = new ItemStack(block, 1, block.getMetaFromState(state));
                                     world.setBlockToAir(pos);
 
                                     int slot = getSlotForPosition(pos);
                                     if (slot == -1) {
                                         int i = 0;
-                                        for (i = 0; i<totalSize; i++) {
+                                        for (i = 0; i < totalSize; i++) {
                                             long world = slotToWorldMap[i];
                                             if (world == -1) {
                                                 slotToWorldMap[i] = getLongFromPosition(x, y, z);
@@ -443,6 +447,46 @@ public class TileController extends TileCore implements ITickable {
         return origin != null && end != null;
     }
 
+    public void updateRawBounds(EnumFacing facing, int x, int y, int z) {
+        EnumFacing posX = facing.rotateY();
+        EnumFacing negX = posX.getOpposite();
+
+        int modx = 1;
+        if (x == 1) modx = 0;
+        else if (x % 2 == 0) modx = x / 2;
+        else modx = (x - 1) / 2;
+
+        this.rawX = x;
+        this.rawY = y;
+        this.rawZ = z;
+
+        //TODO: offsets
+
+        BlockPos origin = new BlockPos(pos);
+        origin = origin.offset(negX, modx);
+        origin = origin.offset(EnumFacing.UP, 0);
+        origin = origin.offset(facing, 1);
+
+        BlockPos end = new BlockPos(pos);
+        end = end.offset(posX, modx);
+        end = end.offset(EnumFacing.UP, y);
+        end = end.offset(facing, z);
+
+        BlockPos low = new BlockPos(
+                Math.min(origin.getX(), end.getX()),
+                Math.min(origin.getY(), end.getY()),
+                Math.min(origin.getZ(), end.getZ())
+        );
+
+        BlockPos high = new BlockPos(
+                Math.max(origin.getX(), end.getX()),
+                Math.max(origin.getY(), end.getY()),
+                Math.max(origin.getZ(), end.getZ())
+        );
+
+        setBounds(low, high);
+    }
+
     public void setBounds(BlockPos pos1, BlockPos pos2) {
         if (origin != null && end != null) {
             dropInventory();
@@ -452,7 +496,7 @@ public class TileController extends TileCore implements ITickable {
         origin = pos1;
         end = pos2;
 
-        height = 1 + end.getY() - origin.getY();
+        height = end.getY() - origin.getY();
         xLength = 1 + end.getX() - origin.getX();
         zLength = 1 + end.getZ() - origin.getZ();
 
@@ -477,20 +521,34 @@ public class TileController extends TileCore implements ITickable {
         slotToWorldMap = new long[totalSize];
         worldToSlotMap = new int[height][xLength][zLength];
 
-        int slot = 0;
-        for (int y = 0; y < height; y++) {
-            for (int z = 0; z < zLength; z++) {
-                for (int x = 0; x < xLength; x++) {
-                    if (!worldOcclusionMap[y][x][z]) {
-                        if (CommonProxy.organizedStorage) {
-                            slotToWorldMap[slot] = getLongFromPosition(x, y, z);
-                            worldToSlotMap[y][x][z] = slot;
-                        } else {
-                            slotToWorldMap[slot] = -1;
-                            worldToSlotMap[y][x][z] = -1;
-                        }
+        if (sortingType == SortingType.COLUMNS) {
+            int slot = 0;
+            for (int x = 0; x < xLength; x++) {
+                for (int z = 0; z < zLength; z++) {
+                    for (int y = 0; y < height; y++) {
+                        slotToWorldMap[slot] = getLongFromPosition(x, y, z);
+                        worldToSlotMap[y][x][z] = slot;
 
                         slot++;
+                    }
+                }
+            }
+        } else {
+            int slot = 0;
+            for (int y = 0; y < height; y++) {
+                for (int z = 0; z < zLength; z++) {
+                    for (int x = 0; x < xLength; x++) {
+                        if (!worldOcclusionMap[y][x][z]) {
+                            if (sortingType == SortingType.ROWS) {
+                                slotToWorldMap[slot] = getLongFromPosition(x, y, z);
+                                worldToSlotMap[y][x][z] = slot;
+                            } else {
+                                slotToWorldMap[slot] = -1;
+                                worldToSlotMap[y][x][z] = -1;
+                            }
+
+                            slot++;
+                        }
                     }
                 }
             }
@@ -501,7 +559,7 @@ public class TileController extends TileCore implements ITickable {
         if (CommonProxy.dropBlocks) {
             dropInventory();
         } else {
-            for (int i=0; i<totalSize; i++) {
+            for (int i = 0; i < totalSize; i++) {
                 ItemStack item = getStackInSlot(i);
                 if (!item.isEmpty() && (item.getItem() instanceof ItemBlock)) {
                     BlockPos pos = BlockPos.fromLong(slotToWorldMap[i]).add(origin);
@@ -513,7 +571,7 @@ public class TileController extends TileCore implements ITickable {
             dropInventory();
         }
 
-         clearInventory();
+        clearInventory();
     }
 
     public void dropInventory() {
@@ -565,7 +623,7 @@ public class TileController extends TileCore implements ITickable {
 
     public void setInventorySlotContents(int slot, ItemStack itemStack) {
         if (!itemStack.isEmpty()) {
-            if (!CommonProxy.organizedStorage) {
+            if (sortingType == SortingType.MESSY) {
                 long longPos = slotToWorldMap[slot];
                 if (longPos == -1) {
                     BlockPos pos = getNextRandomPosition();

@@ -64,7 +64,7 @@ public class ControllerBoundsRenderer {
             for (TileEntity obj : chunks[c].getTileEntityMap().values()) {
                 if (obj instanceof TileController) {
                     TileController controller = (TileController) obj;
-                    if (controller.isReady()) {
+                    if (controller.isReady() && controller.showBounds) {
                         BlockPos[] pair = new BlockPos[2];
                         pair[0] = controller.origin;
                         pair[1] = controller.origin.add(controller.xLength, controller.height, controller.zLength);
