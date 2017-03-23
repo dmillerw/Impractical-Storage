@@ -1,6 +1,7 @@
 package me.dmillerw.storage.client.render;
 
 import me.dmillerw.storage.block.tile.TileItemBlock;
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -9,6 +10,7 @@ import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumBlockRenderType;
 
 /**
  * @author dmillerw
@@ -37,7 +39,13 @@ public class RenderTileItemBlock extends TileEntitySpecialRenderer<TileItemBlock
             }
         }
 
-        if (block) block = renderItem.shouldRenderItemIn3D(te.tileRenderItem);
+        if (block) {
+            block = renderItem.shouldRenderItemIn3D(te.tileRenderItem);
+            if (block) {
+                Block b = Block.getBlockFromItem(te.tileRenderItem.getItem());
+                block = b.getRenderType(b.getDefaultState()) != EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
+            }
+        }
 
         te.isBlock = block;
 

@@ -178,10 +178,12 @@ public class TileController extends TileCore implements ITickable {
     public BlockPos origin = null;
     public BlockPos end = null;
 
-    private int height = 1;
-    private int xLength = 1;
-    private int zLength = 1;
+    public int height = 1;
+    public int xLength = 1;
+    public int zLength = 1;
     private int totalSize;
+
+    public boolean showBounds = false;
 
     private long[] slotToWorldMap = new long[0];
 
@@ -202,6 +204,8 @@ public class TileController extends TileCore implements ITickable {
             compound.setInteger("height", height);
             compound.setInteger("xLength", xLength);
             compound.setInteger("zLength", zLength);
+
+            compound.setBoolean("showBounds", showBounds);
 
             NBTTagList nbt_slotToWorldMap = new NBTTagList();
             for (int i = 0; i < slotToWorldMap.length; i++) {
@@ -280,6 +284,8 @@ public class TileController extends TileCore implements ITickable {
             xLength = compound.getInteger("xLength");
             zLength = compound.getInteger("zLength");
             totalSize = height * xLength * zLength;
+
+            showBounds = compound.getBoolean("showBounds");
 
             inventory = new ItemStack[totalSize];
 
@@ -382,7 +388,7 @@ public class TileController extends TileCore implements ITickable {
         }
     }
 
-    private boolean isReady() {
+    public boolean isReady() {
         return origin != null && end != null;
     }
 
