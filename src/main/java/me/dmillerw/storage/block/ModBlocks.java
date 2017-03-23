@@ -24,6 +24,8 @@ public class ModBlocks {
     public static final ItemBlock controller_item = null;
 
     public static final BlockCrate crate = null;
+    @GameRegistry.ObjectHolder(ModInfo.ID + ":crate")
+    public static final ItemBlock crate_item = null;
 
     @Mod.EventBusSubscriber
     public static class RegistrationHandler {
@@ -41,7 +43,8 @@ public class ModBlocks {
         public static void registerItems(RegistryEvent.Register<Item> event) {
             event.getRegistry().registerAll(
                     new ItemBlock(item_block).setRegistryName(ModInfo.ID, "item_block"),
-                    new ItemBlock(controller).setRegistryName(ModInfo.ID, "controller")
+                    new ItemBlock(controller).setRegistryName(ModInfo.ID, "controller"),
+                    new ItemBlock(crate).setRegistryName(ModInfo.ID, "crate")
             );
         }
     }

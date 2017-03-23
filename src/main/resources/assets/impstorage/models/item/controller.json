@@ -1,10 +1,11 @@
 {
-  "parent": "block/cube_top",
+  "parent": "block/orientable",
   "textures": {
-    "side": "impstorage:blocks/controller_side",
-    "top": "impstorage:blocks/controller_top"
+    "top": "impstorage:blocks/controller_input",
+    "front": "impstorage:blocks/controller_output",
+    "side": "impstorage:blocks/controller_input"
   },
-  "display": {
+"display": {
     "thirdperson": {
       "rotation": [
         10,

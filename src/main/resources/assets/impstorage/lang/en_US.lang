@@ -1,2 +1,2 @@
-item.impstorage:zone_card.name=Zone Card
-tile.impstorage:controller.name=Controller
+tile.impstorage:controller.name=Storage Controller
+itemGroup.impstorage=Impractical Storage

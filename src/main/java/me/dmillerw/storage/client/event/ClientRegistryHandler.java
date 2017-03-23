@@ -19,5 +19,9 @@ public class ClientRegistryHandler {
         ItemBlock item = ModBlocks.controller_item;
         ModelResourceLocation resourceLocation = new ModelResourceLocation(item.getRegistryName(), "inventory");
         ModelLoader.setCustomModelResourceLocation(item, 0, resourceLocation);
+
+        item = ModBlocks.crate_item;
+        resourceLocation = new ModelResourceLocation(item.getRegistryName(), "inventory");
+        ModelLoader.setCustomModelResourceLocation(item, 0, resourceLocation);
     }
 }

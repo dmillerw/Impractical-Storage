@@ -1,19 +1,8 @@
 {
-  "parent": "block/cube",
-  "display": {
-    "firstperson_righthand": {
-      "rotation": [ 0, 135, 0 ],
-      "translation": [ 0, 0, 0 ],
-      "scale": [ 0.40, 0.40, 0.40 ]
-    }
-  },
+  "parent": "block/orientable",
   "textures": {
-    "particle": "impstorage:blocks/controller_back",
-    "down": "impstorage:blocks/controller_top",
-    "up": "impstorage:blocks/controller_top",
-    "north": "impstorage:blocks/controller_back",
-    "east": "impstorage:blocks/controller_side",
-    "south": "impstorage:blocks/controller_top",
-    "west": "impstorage:blocks/controller_side"
+    "top": "impstorage:blocks/controller_input",
+    "front": "impstorage:blocks/controller_output",
+    "side": "impstorage:blocks/controller_input"
   }
 }
