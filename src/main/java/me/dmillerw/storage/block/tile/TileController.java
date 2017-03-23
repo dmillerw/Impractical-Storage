@@ -488,6 +488,25 @@ public class TileController extends TileCore implements ITickable {
         }
     }
 
+    public void onBlockBreak() {
+        if (CommonProxy.dropBlocks) {
+            dropInventory();
+        } else {
+            for (int i = 0; i < totalSize; i++) {
+                ItemStack item = getStackInSlot(i);
+                if (!ItemStackHelper.isEmpty(item) && (item.getItem() instanceof ItemBlock)) {
+                    BlockPos pos = BlockPos.fromLong(slotToWorldMap[i]).add(origin);
+                    getWorld().setBlockState(pos, Block.getBlockFromItem(item.getItem()).getStateFromMeta(item.getItemDamage()));
+                    inventory[i] = null;
+                }
+            }
+
+            dropInventory();
+        }
+
+        clearInventory();
+    }
+
     public void dropInventory() {
         for (ItemStack item : this.inventory)
             InventoryHelper.spawnItemStack(getWorld(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, item);

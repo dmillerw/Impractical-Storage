@@ -34,7 +34,7 @@ public class CommonProxy implements IProxy {
     public static int maxY = 64;
     public static int maxZ = 64;
 
-    public static boolean showBoundsOnSneak = true;
+    public static boolean dropBlocks = false;
     public static boolean organizedStorage = false;
 
     public static int blockUpdateBatch = -1;
@@ -117,11 +117,11 @@ public class CommonProxy implements IProxy {
                 false,
                 "Whether Blocks/Items stored should be presented in neat rows, or in a more haphazard fashion");
 
-        showBoundsOnSneak = configuration.getBoolean(
-                "showBoundsOnSneak",
+        dropBlocks = configuration.getBoolean(
+                "dropBlocks",
                 Configuration.CATEGORY_GENERAL,
-                true,
-                "Whether to show Controller bounds normally when highlighted, or only when sneaking"
+                false,
+                "Whether the Controller should drop all Blocks it's holding when broken, or whether it should place them in the world"
         );
 
         blockUpdateBatch = configuration.getInt(
