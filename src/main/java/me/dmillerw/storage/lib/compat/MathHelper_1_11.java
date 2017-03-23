@@ -1,4 +1,4 @@
-package me.dmillerw.storage.lib.minecraft;
+package me.dmillerw.storage.lib.compat;
 
 import java.util.Random;
 

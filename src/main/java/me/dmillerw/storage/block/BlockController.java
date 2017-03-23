@@ -40,7 +40,12 @@ public class BlockController extends Block implements ITileEntityProvider {
     }
 
     public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-        worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing()), 2);
+        EnumFacing facing = placer.getHorizontalFacing();
+        worldIn.setBlockState(pos, state.withProperty(FACING, facing), 2);
+
+        TileEntity tile = worldIn.getTileEntity(pos);
+        if (tile != null && tile instanceof TileController)
+            ((TileController) tile).initialize(facing);
     }
 
     @Override

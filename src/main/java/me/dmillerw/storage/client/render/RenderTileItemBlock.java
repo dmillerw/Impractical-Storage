@@ -32,6 +32,8 @@ public class RenderTileItemBlock extends TileEntitySpecialRenderer<TileItemBlock
                 if (item == null) item = Item.getItemFromBlock(Blocks.BARRIER);
 
                 te.tileRenderItem = new ItemStack(item, 1, renderValueMeta);
+            } else {
+                te.tileRenderItem = new ItemStack(Item.getItemFromBlock(Blocks.BARRIER));
             }
         }
 
@@ -39,7 +41,7 @@ public class RenderTileItemBlock extends TileEntitySpecialRenderer<TileItemBlock
 
         te.isBlock = block;
 
-        if (!block) {
+        if (!block && te.tileRenderItem != null && te.tileRenderItem.getItem() != null) {
             GlStateManager.pushMatrix();
             GlStateManager.translate(x, y, z);
 

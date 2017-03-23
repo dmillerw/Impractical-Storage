@@ -25,9 +25,6 @@ public class ClientProxy extends CommonProxy {
 
         ModelLoaderRegistry.registerLoader(new BaseModelLoader());
 
-        Item item = ModItems.zone_card;
-        ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation((item).getRegistryName().toString()));
-
         ClientRegistry.bindTileEntitySpecialRenderer(TileItemBlock.class, new RenderTileItemBlock());
     }
 

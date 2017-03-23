@@ -1,10 +1,14 @@
-package me.dmillerw.storage.lib.minecraft;
+package me.dmillerw.storage.lib.compat;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
 public class ItemStackHelper {
+
+    public static boolean isEmpty(ItemStack itemStack) {
+        return itemStack == null || itemStack.getItem() == null || itemStack.stackSize <= 0;
+    }
 
     public static NBTTagCompound saveAllItems(NBTTagCompound tag, ItemStack[] list) {
         return saveAllItems(tag, list, true);

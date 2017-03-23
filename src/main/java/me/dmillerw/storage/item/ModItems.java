@@ -13,16 +13,12 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 @GameRegistry.ObjectHolder(ModInfo.ID)
 public class ModItems {
 
-    public static final ItemZoneCard zone_card = null;
-
     @Mod.EventBusSubscriber
     public static class RegistrationHandler {
 
         @SubscribeEvent
         public static void registerItems(RegistryEvent.Register<Item> event) {
-            event.getRegistry().registerAll(
-                    new ItemZoneCard().setRegistryName(ModInfo.ID, "zone_card")
-            );
+
         }
     }
 }

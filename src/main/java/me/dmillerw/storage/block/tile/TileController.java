@@ -1,8 +1,8 @@
 package me.dmillerw.storage.block.tile;
 
 import me.dmillerw.storage.block.ModBlocks;
-import me.dmillerw.storage.lib.minecraft.ItemStackHelper;
-import me.dmillerw.storage.lib.minecraft.MathHelper_1_11;
+import me.dmillerw.storage.lib.compat.ItemStackHelper;
+import me.dmillerw.storage.lib.compat.MathHelper_1_11;
 import me.dmillerw.storage.proxy.CommonProxy;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.inventory.InventoryHelper;
@@ -23,7 +23,6 @@ import net.minecraftforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nullable;
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -170,13 +169,14 @@ public class TileController extends TileCore implements ITickable {
         public ItemStack itemStack;
     }
 
+
     private Random random = new Random();
 
     private ItemHandler itemHandler = new ItemHandler(this);
     public ItemStack[] inventory = new ItemStack[0];
 
-    private BlockPos origin = null;
-    private BlockPos end = null;
+    public BlockPos origin = null;
+    public BlockPos end = null;
 
     private int height = 1;
     private int xLength = 1;
@@ -184,8 +184,10 @@ public class TileController extends TileCore implements ITickable {
     private int totalSize;
 
     private long[] slotToWorldMap = new long[0];
+
     // [Y][X][Z]
     private int[][][] worldToSlotMap = new int[0][0][0];
+    private boolean[][][] worldOcclusionMap = new boolean[0][0][0];
 
     // Block Queue
     private ArrayDeque<QueueElement> blockQueue = new ArrayDeque<>();
@@ -226,6 +228,24 @@ public class TileController extends TileCore implements ITickable {
                 }
             }
             compound.setTag("worldToSlotMap", nbt_worldToSlotMap);
+
+            NBTTagList nbt_worldOcclusionMap = new NBTTagList();
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < xLength; x++) {
+                    for (int z = 0; z < zLength; z++) {
+                        if (worldOcclusionMap[y][x][z]) {
+                            NBTTagCompound tag = new NBTTagCompound();
+
+                            tag.setInteger("_x", x);
+                            tag.setInteger("_y", y);
+                            tag.setInteger("_z", z);
+
+                            nbt_worldOcclusionMap.appendTag(tag);
+                        }
+                    }
+                }
+            }
+            compound.setTag("worldOcclusionMap", nbt_worldOcclusionMap);
 
             NBTTagCompound inv = new NBTTagCompound();
             ItemStackHelper.saveAllItems(inv, inventory);
@@ -282,6 +302,18 @@ public class TileController extends TileCore implements ITickable {
                 worldToSlotMap[y][x][z] = slot;
             }
 
+            worldOcclusionMap = new boolean[height][xLength][zLength];
+            NBTTagList nbt_worldOcclusionMap = compound.getTagList("worldOcclusionMap", Constants.NBT.TAG_COMPOUND);
+            for (int i = 0; i < nbt_worldOcclusionMap.tagCount(); i++) {
+                NBTTagCompound tag = nbt_worldOcclusionMap.getCompoundTagAt(i);
+
+                int x = tag.getInteger("_x");
+                int y = tag.getInteger("_y");
+                int z = tag.getInteger("_z");
+
+                worldOcclusionMap[y][x][z] = true;
+            }
+
             NBTTagCompound inv = compound.getCompoundTag("inventory");
             ItemStackHelper.loadAllItems(inv, inventory);
 
@@ -299,14 +331,47 @@ public class TileController extends TileCore implements ITickable {
         }
     }
 
+    public void initialize(EnumFacing facing) {
+        if (!getWorld().isRemote) {
+            if (facing != null) {
+                EnumFacing posX = facing.rotateY();
+                EnumFacing negX = posX.getOpposite();
+
+                BlockPos origin = new BlockPos(pos);
+                origin = origin.offset(negX, CommonProxy.defaultMinX);
+                origin = origin.offset(EnumFacing.UP, CommonProxy.defaultMinY - 1);
+                origin = origin.offset(facing, CommonProxy.defaultMinY);
+
+                BlockPos end = new BlockPos(pos);
+                end = end.offset(posX, CommonProxy.defaultMaxX);
+                end = end.offset(EnumFacing.UP, CommonProxy.defaultMaxY - 1);
+                end = end.offset(facing, CommonProxy.defaultMaxZ);
+
+                BlockPos low = new BlockPos(
+                        Math.min(origin.getX(), end.getX()),
+                        Math.min(origin.getY(), end.getY()),
+                        Math.min(origin.getZ(), end.getZ())
+                );
+
+                BlockPos high = new BlockPos(
+                        Math.max(origin.getX(), end.getX()),
+                        Math.max(origin.getY(), end.getY()),
+                        Math.max(origin.getZ(), end.getZ())
+                );
+
+                setBounds(low, high);
+            }
+        }
+    }
+
     @Override
     public void update() {
-        if (!worldObj.isRemote) {
+        if (!getWorld().isRemote) {
             if (CommonProxy.useBlockQueue()) {
                 blockQueueTickCounter++;
 
                 if (blockQueueTickCounter >= CommonProxy.blockUpdateRate) {
-                    for (int i=0; i<Math.min(blockQueue.size(), CommonProxy.blockUpdateBatch); i++) {
+                    for (int i = 0; i < Math.min(blockQueue.size(), CommonProxy.blockUpdateBatch); i++) {
                         QueueElement element = blockQueue.pop();
                         setBlock(element.slot, element.itemStack);
                     }
@@ -327,40 +392,56 @@ public class TileController extends TileCore implements ITickable {
             clearInventory();
         }
 
-        origin = pos1.subtract(pos);
-        end = pos2.subtract(pos);
+        origin = pos1;
+        end = pos2;
 
         height = 1 + end.getY() - origin.getY();
         xLength = 1 + end.getX() - origin.getX();
         zLength = 1 + end.getZ() - origin.getZ();
 
-        totalSize = height * xLength * zLength;
+        worldOcclusionMap = new boolean[height][xLength][zLength];
+
+        int occludedSpots = 0;
+        for (int y = 0; y < height; y++) {
+            for (int z = 0; z < zLength; z++) {
+                for (int x = 0; x < xLength; x++) {
+                    if (!getWorld().isAirBlock(origin.add(x, y, z))) {
+                        worldOcclusionMap[y][x][z] = true;
+                        occludedSpots++;
+                    }
+                }
+            }
+        }
+
+        totalSize = (height * xLength * zLength) - occludedSpots;
 
         inventory = new ItemStack[totalSize];
 
         slotToWorldMap = new long[totalSize];
         worldToSlotMap = new int[height][xLength][zLength];
 
-        if (CommonProxy.organizedStorage) {
-            int slot = 0;
-            for (int y = 0; y < height; y++) {
-                for (int z = 0; z < zLength; z++) {
-                    for (int x = 0; x < xLength; x++) {
-                        slotToWorldMap[slot] = getLongFromPosition(x, y, z);
-                        worldToSlotMap[y][x][z] = slot;
+        int slot = 0;
+        for (int y = 0; y < height; y++) {
+            for (int z = 0; z < zLength; z++) {
+                for (int x = 0; x < xLength; x++) {
+                    if (!worldOcclusionMap[y][x][z]) {
+                        if (CommonProxy.organizedStorage) {
+                            slotToWorldMap[slot] = getLongFromPosition(x, y, z);
+                            worldToSlotMap[y][x][z] = slot;
+                        } else {
+                            slotToWorldMap[slot] = -1;
+                        }
 
                         slot++;
                     }
                 }
             }
-        } else {
-            Arrays.fill(slotToWorldMap, -1);
         }
     }
 
     public void dropInventory() {
         for (ItemStack item : this.inventory)
-            InventoryHelper.spawnItemStack(worldObj, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, item);
+            InventoryHelper.spawnItemStack(getWorld(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, item);
     }
 
     public void clearInventory() {
@@ -370,7 +451,7 @@ public class TileController extends TileCore implements ITickable {
 
     public int getSlotForPosition(BlockPos pos) {
         try {
-            pos = pos.subtract(this.pos).subtract(origin);
+            pos = pos.subtract(origin);
             return worldToSlotMap[pos.getY()][pos.getX()][pos.getZ()];
         } catch (Exception ex) {
             return 0;
@@ -387,28 +468,38 @@ public class TileController extends TileCore implements ITickable {
 
     private BlockPos getNextRandomPosition() {
         int x = random.nextInt(xLength);
-        int y = height - 1;
+        int y = 0;
         int z = random.nextInt(zLength);
 
-        BlockPos pos = new BlockPos(x, y, z).add(origin).add(getPos());
-        while (worldObj.isAirBlock(pos)) pos = pos.down();
-        pos = pos.up();
-        pos = pos.subtract(origin).subtract(getPos());
+        boolean failed = false;
 
-        if (pos.getY() > y)
-            return getNextRandomPosition();
+        BlockPos pos = new BlockPos(x, y, z).add(origin);
+        while (worldOcclusionMap[y][x][z] || !getWorld().isAirBlock(pos)) {
+            pos = pos.up();
+            y++;
 
+            if (y >= height) {
+                failed = true;
+                break;
+            }
+        }
+
+        if (failed) return getNextRandomPosition();
+
+        pos = pos.subtract(origin);
         return pos;
     }
 
     public void setInventorySlotContents(int slot, ItemStack itemStack) {
-        if (!CommonProxy.organizedStorage) {
-            long longPos = slotToWorldMap[slot];
-            if (longPos == -1) {
-                BlockPos pos = getNextRandomPosition();
+        if (ItemStackHelper.isEmpty(itemStack)) {
+            if (!CommonProxy.organizedStorage) {
+                long longPos = slotToWorldMap[slot];
+                if (longPos == -1) {
+                    BlockPos pos = getNextRandomPosition();
 
-                slotToWorldMap[slot] = pos.toLong();
-                worldToSlotMap[pos.getY()][pos.getX()][pos.getZ()] = slot;
+                    slotToWorldMap[slot] = pos.toLong();
+                    worldToSlotMap[pos.getY()][pos.getX()][pos.getZ()] = slot;
+                }
             }
         }
 
@@ -427,21 +518,31 @@ public class TileController extends TileCore implements ITickable {
     }
 
     private void setBlock(int slot, ItemStack itemStack) {
-        BlockPos pos = BlockPos.fromLong(slotToWorldMap[slot]).add(origin).add(getPos());
-        IBlockState state = worldObj.getBlockState(pos);
+        BlockPos pos = BlockPos.fromLong(slotToWorldMap[slot]);
 
-        if (itemStack == null || itemStack.stackSize <= 0) {
+        int x = pos.getX();
+        int y = pos.getY();
+        int z = pos.getZ();
+
+        pos = pos.add(origin);
+
+        IBlockState state = getWorld().getBlockState(pos);
+
+        if (ItemStackHelper.isEmpty(itemStack)) {
             if (state != null && state.getBlock() == ModBlocks.item_block) {
-                worldObj.setBlockToAir(pos);
+                getWorld().setBlockToAir(pos);
+
+                slotToWorldMap[slot] = -1;
+                worldToSlotMap[y][x][z] = -1;
             }
         } else {
             if (state != null && state.getBlock() == ModBlocks.item_block) {
-                TileEntity tile = worldObj.getTileEntity(pos);
+                TileEntity tile = getWorld().getTileEntity(pos);
                 if (tile != null && tile instanceof TileItemBlock)
                     ((TileItemBlock) tile).updateItemBlock(itemStack);
             } else {
-                worldObj.setBlockState(pos, ModBlocks.item_block.getDefaultState());
-                TileEntity tile = worldObj.getTileEntity(pos);
+                getWorld().setBlockState(pos, ModBlocks.item_block.getDefaultState());
+                TileEntity tile = getWorld().getTileEntity(pos);
                 if (tile != null && tile instanceof TileItemBlock) {
                     ((TileItemBlock) tile).setController(this);
                     ((TileItemBlock) tile).updateItemBlock(itemStack);
