@@ -12,7 +12,6 @@ import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -53,10 +52,7 @@ public class BlockController extends Block implements ITileEntityProvider {
         if (!worldIn.isRemote) {
             TileEntity tile = worldIn.getTileEntity(pos);
             if (tile != null) {
-                for (ItemStack item : ((TileController) tile).inventory) {
-                    InventoryHelper.spawnItemStack(worldIn, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, item);
-                }
-                ((TileController) tile).clearInventory();
+                ((TileController)tile).onBlockBreak();
             }
         }
 
