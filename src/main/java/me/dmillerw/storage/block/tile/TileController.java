@@ -2,6 +2,7 @@ package me.dmillerw.storage.block.tile;
 
 import me.dmillerw.storage.block.ModBlocks;
 import me.dmillerw.storage.proxy.CommonProxy;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.ItemStackHelper;
@@ -191,6 +192,8 @@ public class TileController extends TileCore implements ITickable {
     public int xLength = 1;
     public int zLength = 1;
     private int totalSize;
+
+    private int scanCounter = 0;
 
     public boolean showBounds = false;
 
@@ -394,6 +397,45 @@ public class TileController extends TileCore implements ITickable {
                     blockQueueTickCounter = 0;
                 }
             }
+
+            if (scanCounter >= CommonProxy.blockUpdateRate) {
+                for (int y = 0; y < height; y++) {
+                    for (int z = 0; z < zLength; z++) {
+                        for (int x = 0; x < xLength; x++) {
+                            if (!worldOcclusionMap[y][x][z]) {
+                                BlockPos pos = new BlockPos(x, y, z).add(origin);
+                                IBlockState state = world.getBlockState(pos);
+                                Block block = state.getBlock();
+
+                                if (block != ModBlocks.item_block && !world.isAirBlock(pos)) {
+                                    ItemStack stack = new ItemStack(block, 1, block.getMetaFromState(state));
+                                    world.setBlockToAir(pos);
+
+                                    int slot = getSlotForPosition(pos);
+                                    if (slot == -1) {
+                                        int i = 0;
+                                        for (i = 0; i<totalSize; i++) {
+                                            long world = slotToWorldMap[i];
+                                            if (world == -1) {
+                                                slotToWorldMap[i] = getLongFromPosition(x, y, z);
+                                                worldToSlotMap[y][x][z] = i;
+
+                                                break;
+                                            }
+                                        }
+
+                                        slot = i;
+                                    }
+
+                                    setInventorySlotContents(slot, stack);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                scanCounter++;
+            }
         }
     }
 
@@ -445,6 +487,7 @@ public class TileController extends TileCore implements ITickable {
                             worldToSlotMap[y][x][z] = slot;
                         } else {
                             slotToWorldMap[slot] = -1;
+                            worldToSlotMap[y][x][z] = -1;
                         }
 
                         slot++;
@@ -465,12 +508,8 @@ public class TileController extends TileCore implements ITickable {
     }
 
     public int getSlotForPosition(BlockPos pos) {
-        try {
-            pos = pos.subtract(origin);
-            return worldToSlotMap[pos.getY()][pos.getX()][pos.getZ()];
-        } catch (Exception ex) {
-            return 0;
-        }
+        pos = pos.subtract(origin);
+        return worldToSlotMap[pos.getY()][pos.getX()][pos.getZ()];
     }
 
     public ItemStack getStackForPosition(BlockPos pos) {
