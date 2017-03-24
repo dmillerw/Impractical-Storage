@@ -653,10 +653,12 @@ public class TileController extends TileCore implements ITickable {
 
         if (ItemStackHelper.isEmpty(itemStack)) {
             if (state != null && state.getBlock() == ModBlocks.item_block) {
-                getWorld().setBlockToAir(pos);
+                if (sortingType == SortingType.MESSY) {
+                    slotToWorldMap[slot] = -1;
+                    worldToSlotMap[y][x][z] = -1;
+                }
 
-                slotToWorldMap[slot] = -1;
-                worldToSlotMap[y][x][z] = -1;
+                getWorld().setBlockToAir(pos);
             }
         } else {
             if (state != null && state.getBlock() == ModBlocks.item_block) {
