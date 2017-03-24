@@ -104,11 +104,15 @@ public class TileItemBlock extends TileCore {
         if (controller != null) {
             int slot = controller.getSlotForPosition(pos);
 
-            ItemStack drop = controller.getStackInSlot(slot);
-            if (drop != null && drop.stackSize > 0) drop = drop.copy();
+            if (slot != -1) {
+                ItemStack drop = controller.getStackInSlot(slot);
+                if (drop != null && drop.stackSize > 0) drop = drop.copy();
 
-            controller.setInventorySlotContents(slot, null);
-            return drop;
+                controller.setInventorySlotContents(slot, null);
+                return drop;
+            } else {
+                return null;
+            }
         } else {
             return null;
         }

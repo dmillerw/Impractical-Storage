@@ -68,6 +68,8 @@ public class BlockItemBlock extends Block implements ITileEntityProvider {
             if (tile != null && tile instanceof TileItemBlock)
                 ((TileItemBlock) tile).getDrop();
         }
+
+        super.breakBlock(worldIn, pos, state);
     }
 
     @Override
