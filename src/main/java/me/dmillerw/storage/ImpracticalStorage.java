@@ -17,7 +17,7 @@ import java.io.File;
 @Mod(modid = ModInfo.ID, name = ModInfo.NAME, version = ModInfo.VERSION)
 public class ImpracticalStorage {
 
-    @Mod.Instance("remoteio")
+    @Mod.Instance(ModInfo.ID)
     public static ImpracticalStorage instance;
 
     @SidedProxy(
