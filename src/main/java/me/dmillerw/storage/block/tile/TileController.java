@@ -78,6 +78,8 @@ public class TileController extends TileCore implements ITickable {
             if (stack == null || stack.stackSize <= 0)
                 return null;
 
+            slot = getSlots() - slot - 1;
+
             ItemStack stackInSlot = controller.getStackInSlot(slot);
 
             int m;
@@ -135,8 +137,6 @@ public class TileController extends TileCore implements ITickable {
 
         @Override
         public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            slot = getSlots() - slot - 1;
-
             if (amount == 0)
                 return null;
 
@@ -513,19 +513,19 @@ public class TileController extends TileCore implements ITickable {
         worldToSlotMap = new int[height][xLength][zLength];
 
         if (sortingType == SortingType.COLUMNS) {
-            int slot = 0;
+            int slot = totalSize - 1;
             for (int x = 0; x < xLength; x++) {
                 for (int z = 0; z < zLength; z++) {
                     for (int y = 0; y < height; y++) {
                         slotToWorldMap[slot] = getLongFromPosition(x, y, z);
                         worldToSlotMap[y][x][z] = slot;
 
-                        slot++;
+                        slot--;
                     }
                 }
             }
         } else {
-            int slot = 0;
+            int slot = totalSize - 1;
             for (int y = 0; y < height; y++) {
                 for (int z = 0; z < zLength; z++) {
                     for (int x = 0; x < xLength; x++) {
@@ -538,7 +538,7 @@ public class TileController extends TileCore implements ITickable {
                                 worldToSlotMap[y][x][z] = -1;
                             }
 
-                            slot++;
+                            slot--;
                         }
                     }
                 }
