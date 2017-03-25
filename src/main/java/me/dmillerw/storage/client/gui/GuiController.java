@@ -150,9 +150,9 @@ public class GuiController extends GuiScreen {
             default: break;
         }
 
-        if (x <= 0) x = 1; else if (x >= CommonProxy.maxX) x = CommonProxy.maxX;
-        if (y <= 0) y = 1; else if (y >= CommonProxy.maxY) y = CommonProxy.maxY;
-        if (z <= 0) z = 1; else if (z >= CommonProxy.maxZ) z = CommonProxy.maxZ;
+        if (x <= 0) x = 1; else if (x >= CommonProxy.maxX) x = CommonProxy.maxX - 1;
+        if (y <= 0) y = 1; else if (y >= CommonProxy.maxY) y = CommonProxy.maxY - 1;
+        if (z <= 0) z = 1; else if (z >= CommonProxy.maxZ) z = CommonProxy.maxZ - 1;
 
         textX.setText(Integer.toString(x));
         textY.setText(Integer.toString(y));
