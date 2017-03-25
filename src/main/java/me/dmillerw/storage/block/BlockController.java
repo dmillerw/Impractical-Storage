@@ -39,6 +39,9 @@ public class BlockController extends Block implements ITileEntityProvider {
 
         setCreativeTab(ModTab.TAB);
         setUnlocalizedName(ModInfo.ID + ":controller");
+
+        setHardness(2F);
+        setResistance(2F);
     }
 
     @Override

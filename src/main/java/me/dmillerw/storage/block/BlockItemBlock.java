@@ -41,6 +41,7 @@ public class BlockItemBlock extends Block implements ITileEntityProvider {
         setUnlocalizedName(ModInfo.ID + ":item_block");
 
         setBlockUnbreakable();
+        setResistance(100F);
 
         setDefaultState(this.blockState.getBaseState());
     }
