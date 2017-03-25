@@ -69,6 +69,21 @@ public class BlockController extends Block implements ITileEntityProvider {
         super.breakBlock(worldIn, pos, state);
     }
 
+    @Override
+    public boolean hasComparatorInputOverride(IBlockState state) {
+        return true;
+    }
+
+    @Override
+    public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos) {
+        TileEntity tile = worldIn.getTileEntity(pos);
+        if (tile != null && tile instanceof TileController) {
+            return ((TileController) tile).getRedstoneLevel();
+        } else {
+            return 0;
+        }
+    }
+
     @Nullable
     @Override
     public TileEntity createNewTileEntity(World worldIn, int meta) {

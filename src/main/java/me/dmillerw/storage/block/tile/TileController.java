@@ -676,6 +676,23 @@ public class TileController extends TileCore implements ITickable {
         }
     }
 
+    public int getRedstoneLevel() {
+        int i = 0;
+        float f = 0;
+
+        for (int j = 0; j < totalSize; j++) {
+            ItemStack stack = getStackInSlot(j);
+            if (stack != null && stack.stackSize > 0) {
+                f += (float) stack.stackSize / (float) Math.min(getMaxStackSize(stack), stack.getMaxStackSize());
+                ++i;
+            }
+        }
+
+        f = f / (float)totalSize;
+
+        return MathHelper_1_11.floor(f * 14F) + (i > 0 ? 1 : 0);
+    }
+
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
         return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && isReady();
