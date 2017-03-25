@@ -1,5 +1,6 @@
 package me.dmillerw.storage.client.gui;
 
+import com.google.common.base.Predicate;
 import me.dmillerw.storage.block.tile.TileController;
 import me.dmillerw.storage.client.gui.widget.GuiButtonArrow;
 import me.dmillerw.storage.lib.ModInfo;
@@ -13,6 +14,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.config.GuiButtonExt;
+import org.lwjgl.input.Keyboard;
 
 import java.io.IOException;
 
@@ -22,6 +24,15 @@ import java.io.IOException;
 public class GuiController extends GuiScreen {
 
     private static final ResourceLocation GUI_TEXTURE = new ResourceLocation(ModInfo.ID, "textures/gui/controller.png");
+
+    private static final Predicate<String> NUMBER_VALIDATOR = s -> {
+        for (char c : s.toCharArray()) {
+            if (!Character.isDigit(c)) {
+                return false;
+            }
+        }
+        return true;
+    };
 
     private static final String TEXT_SHOW_BOUNDS = "Show Boundaries";
     private static final String TEXT_HIDE_BOUNDS = "Hide Boundaries";
@@ -90,15 +101,40 @@ public class GuiController extends GuiScreen {
 
         textX = new GuiTextField(0, fontRendererObj, guiLeft + 9,   guiTop + 40, 29, 15);
         textX.setText(Integer.toString(x));
+        textX.setValidator(NUMBER_VALIDATOR);
+
         textY = new GuiTextField(1, fontRendererObj, guiLeft + 44,  guiTop + 40, 29, 15);
         textY.setText(Integer.toString(y));
+        textY.setValidator(NUMBER_VALIDATOR);
+
         textZ = new GuiTextField(2, fontRendererObj, guiLeft + 79,  guiTop + 40, 29, 15);
         textZ.setText(Integer.toString(z));
+        textZ.setValidator(NUMBER_VALIDATOR);
     }
 
     @Override
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
         super.keyTyped(typedChar, keyCode);
+
+        if (keyCode == Keyboard.KEY_RETURN) {
+            if (textX.isFocused() || textY.isFocused() || textZ.isFocused()) {
+                String sx = textX.getText();
+                String sy = textY.getText();
+                String sz = textZ.getText();
+
+                int nx = sx.isEmpty() ? x : Integer.parseInt(sx);
+                int ny = sy.isEmpty() ? y : Integer.parseInt(sy);
+                int nz = sz.isEmpty() ? z : Integer.parseInt(sz);
+
+                textX.setFocused(false);
+                textY.setFocused(false);
+                textZ.setFocused(false);
+
+                update(nx, ny, nz, showBounds, sortingType);
+
+                return;
+            }
+        }
 
         if (textX.textboxKeyTyped(typedChar, keyCode)) return;
         if (textY.textboxKeyTyped(typedChar, keyCode)) return;
@@ -116,60 +152,76 @@ public class GuiController extends GuiScreen {
 
     @Override
     protected void actionPerformed(GuiButton button) throws IOException {
+        int nx = x;
+        int ny = y;
+        int nz = z;
+        boolean nshowBounds = showBounds;
+        SortingType nsortingType = sortingType;
+
+        switch (button.id) {
+            case BUTTON_X_UP:   nx += 1; break;
+            case BUTTON_X_DOWN: nx -= 1; break;
+            case BUTTON_Y_UP:   ny += 1; break;
+            case BUTTON_Y_DOWN: ny -= 1; break;
+            case BUTTON_Z_UP:   nz += 1; break;
+            case BUTTON_Z_DOWN: nz -= 1; break;
+
+            case BUTTON_TOGGLE_BOUNDS: {
+                nshowBounds = !nshowBounds;
+                buttonShowBounds.displayString = nshowBounds ? TEXT_HIDE_BOUNDS : TEXT_SHOW_BOUNDS;
+                break;
+            }
+
+            case BUTTON_SORTING_TYPE: {
+                int ord = nsortingType.ordinal();
+                if (ord + 1 >= SortingType.VALUES.length) {
+                    nsortingType = SortingType.ROWS;
+                } else {
+                    nsortingType = SortingType.VALUES[ord + 1];
+                }
+
+                buttonSortType.displayString = TEXT_SORTING_TYPE + nsortingType.name();
+            }
+
+            default: break;
+        }
+
+        update(nx, ny, nz, nshowBounds, nsortingType);
+    }
+
+    private void update(int nx, int ny, int nz, boolean nshowBounds, SortingType nsortingType) {
         int ox = x;
         int oy = y;
         int oz = z;
         boolean oshowBounds = showBounds;
         SortingType osortingType= sortingType;
 
-        switch (button.id) {
-            case BUTTON_X_UP:   x += 1; break;
-            case BUTTON_X_DOWN: x -= 1; break;
-            case BUTTON_Y_UP:   y += 1; break;
-            case BUTTON_Y_DOWN: y -= 1; break;
-            case BUTTON_Z_UP:   z += 1; break;
-            case BUTTON_Z_DOWN: z -= 1; break;
+        if (nx <= 0) nx = 1; else if (nx >= CommonProxy.maxX) nx = CommonProxy.maxX - 1;
+        if (ny <= 0) ny = 1; else if (ny >= CommonProxy.maxY) ny = CommonProxy.maxY - 1;
+        if (nz <= 0) nz = 1; else if (nz >= CommonProxy.maxZ) nz = CommonProxy.maxZ - 1;
 
-            case BUTTON_TOGGLE_BOUNDS: {
-                showBounds = !showBounds;
-                buttonShowBounds.displayString = showBounds ? TEXT_HIDE_BOUNDS : TEXT_SHOW_BOUNDS;
-                break;
-            }
-
-            case BUTTON_SORTING_TYPE: {
-                int ord = sortingType.ordinal();
-                if (ord + 1 >= SortingType.VALUES.length) {
-                    sortingType = SortingType.ROWS;
-                } else {
-                    sortingType = SortingType.VALUES[ord + 1];
-                }
-
-                buttonSortType.displayString = TEXT_SORTING_TYPE + sortingType.name();
-            }
-
-            default: break;
-        }
-
-        if (x <= 0) x = 1; else if (x >= CommonProxy.maxX) x = CommonProxy.maxX - 1;
-        if (y <= 0) y = 1; else if (y >= CommonProxy.maxY) y = CommonProxy.maxY - 1;
-        if (z <= 0) z = 1; else if (z >= CommonProxy.maxZ) z = CommonProxy.maxZ - 1;
-
-        textX.setText(Integer.toString(x));
-        textY.setText(Integer.toString(y));
-        textZ.setText(Integer.toString(z));
+        textX.setText(Integer.toString(nx));
+        textY.setText(Integer.toString(ny));
+        textZ.setText(Integer.toString(nz));
 
         PacketConfig packet = new PacketConfig(tile.getPos());
 
-        if (ox != x || oy != y || oz != z)
-            packet.setBoundaryDimensions(x, y, z);
+        if (ox != nx || oy != ny || oz != nz)
+            packet.setBoundaryDimensions(nx, ny, nz);
 
-        if (oshowBounds != showBounds)
-            packet.setShowBounds(showBounds);
+        if (oshowBounds != nshowBounds)
+            packet.setShowBounds(nshowBounds);
 
-        if (osortingType != sortingType)
-            packet.setSortingType(sortingType);
+        if (osortingType != nsortingType)
+            packet.setSortingType(nsortingType);
 
         PacketHandler.INSTANCE.sendToServer(packet);
+
+        x = nx;
+        y = ny;
+        z = nz;
+        showBounds = nshowBounds;
+        sortingType = nsortingType;
     }
 
     @Override
