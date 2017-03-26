@@ -24,6 +24,16 @@ public class BlockOverrides {
         Type mapType = new TypeToken<Map<String, Map<String, String>>>() {}.getType();
         Reader reader = new InputStreamReader(ImpracticalStorage.class.getResourceAsStream("/assets/impstorage/mod/BlockOverrides.json"));
 
+        // Example File:
+        // {
+        //   "minecraft": {
+        //     "sapling": "block"
+        //   }
+        // }
+        //
+        // Would override our determination for what a sapling is, and treat it as a block that should be rendered
+        // in world, and be unable to stack in crates
+
         Map<String, Map<String, String>> data = (new GsonBuilder().create()).fromJson(reader, mapType);
 
         for (String key : data.keySet()) {
