@@ -1,2 +1,8 @@
 tile.impstorage:controller.name=Storage Controller
+tile.impstorage:crate.wood.name=Wooden Crate
+tile.impstorage:crate.iron.name=Iron Crate
+tile.impstorage:crate.gold.name=Golden Crate
+tile.impstorage:crate.diamond.name=Diamond Crate
+tile.impstorage:crate.obsidian.name=Obsidian Crate
+
 itemGroup.impstorage=Impractical Storage
