@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import me.dmillerw.storage.block.BlockItemBlock;
 import me.dmillerw.storage.block.ModBlocks;
+import me.dmillerw.storage.core.BlockOverrides;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -55,18 +56,20 @@ public class ItemBlockBakedModel implements IBakedModel {
         Block renderBlock;
         if (renderValue == null || renderValue.isEmpty()) {
             renderBlock = ModBlocks.crate;
+            renderValueMeta = 0;
         } else {
             final ItemStack itemStack = new ItemStack(Item.getByNameOrId(renderValue), 1, renderValueMeta);
 
             if (isBlock) {
-                IBakedModel inventoryModel = Minecraft.getMinecraft().getRenderItem().getItemModelMesher().getItemModel(itemStack);
-                if (!inventoryModel.isGui3d()) {
+                if (BlockOverrides.shouldTreatAsItem(itemStack.getItem())) {
                     renderBlock = ModBlocks.crate;
+                    renderValueMeta = 0;
                 } else {
                     renderBlock = Block.getBlockFromName(renderValue);
                 }
             } else {
                 renderBlock = ModBlocks.crate;
+                renderValueMeta = 0;
             }
         }
 
