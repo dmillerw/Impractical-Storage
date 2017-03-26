@@ -1,5 +1,6 @@
 package me.dmillerw.storage.block;
 
+import me.dmillerw.storage.block.item.ItemBlockCrate;
 import me.dmillerw.storage.lib.ModInfo;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -44,7 +45,7 @@ public class ModBlocks {
             event.getRegistry().registerAll(
                     new ItemBlock(item_block).setRegistryName(ModInfo.ID, "item_block"),
                     new ItemBlock(controller).setRegistryName(ModInfo.ID, "controller"),
-                    new ItemBlock(crate).setRegistryName(ModInfo.ID, "crate")
+                    new ItemBlockCrate(crate).setRegistryName(ModInfo.ID, "crate")
             );
         }
     }

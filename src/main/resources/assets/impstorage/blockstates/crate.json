@@ -1,5 +1,9 @@
 {
   "variants": {
-    "normal": { "model": "impstorage:crate" }
+    "variant=wood":     { "model": "impstorage:crate_wood"     },
+    "variant=iron":     { "model": "impstorage:crate_iron"     },
+    "variant=gold":     { "model": "impstorage:crate_gold"     },
+    "variant=diamond":  { "model": "impstorage:crate_diamond"  },
+    "variant=obsidian": { "model": "impstorage:crate_obsidian" }
   }
 }

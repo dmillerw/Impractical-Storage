@@ -1,5 +1,6 @@
 package me.dmillerw.storage.client.event;
 
+import me.dmillerw.storage.block.BlockCrate;
 import me.dmillerw.storage.block.ModBlocks;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.ItemBlock;
@@ -21,7 +22,9 @@ public class ClientRegistryHandler {
         ModelLoader.setCustomModelResourceLocation(item, 0, resourceLocation);
 
         item = ModBlocks.crate_item;
-        resourceLocation = new ModelResourceLocation(item.getRegistryName(), "inventory");
-        ModelLoader.setCustomModelResourceLocation(item, 0, resourceLocation);
+        for (BlockCrate.EnumType type : BlockCrate.EnumType.values()) {
+            ModelResourceLocation location = new ModelResourceLocation(item.getRegistryName(), "variant=" + type.getName());
+            ModelLoader.setCustomModelResourceLocation(item, type.getMetadata(), location);
+        }
     }
 }
