@@ -13,6 +13,7 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraftforge.fml.client.config.GuiButtonExt;
 import org.lwjgl.input.Keyboard;
 
@@ -34,9 +35,9 @@ public class GuiController extends GuiScreen {
         return true;
     };
 
-    private static final String TEXT_SHOW_BOUNDS = "Show Boundaries";
-    private static final String TEXT_HIDE_BOUNDS = "Hide Boundaries";
-    private static final String TEXT_SORTING_TYPE = "Sort Type: ";
+    private static final String TEXT_SHOW_BOUNDS = "gui.text.bounds.show";
+    private static final String TEXT_HIDE_BOUNDS = "gui.text.bounds.hide";
+    private static final String TEXT_SORTING_TYPE = "gui.text.sort_type";
 
     private static final int BUTTON_X_UP = 0;
     private static final int BUTTON_X_DOWN = 1;
@@ -85,10 +86,10 @@ public class GuiController extends GuiScreen {
         this.guiTop = (this.height - GUI_HEIGHT) / 2;
 
         addButton(buttonShowBounds = new GuiButtonExt(BUTTON_TOGGLE_BOUNDS, guiLeft + 8, guiTop + 93, 101, 16,
-                showBounds ? TEXT_HIDE_BOUNDS : TEXT_SHOW_BOUNDS));
+                I18n.translateToLocal(showBounds ? TEXT_HIDE_BOUNDS : TEXT_SHOW_BOUNDS)));
 
         addButton(buttonSortType = new GuiButtonExt(BUTTON_SORTING_TYPE, guiLeft + 8, guiTop + 113, 101, 16,
-                TEXT_SORTING_TYPE + sortingType.name()));
+                I18n.translateToLocal(TEXT_SORTING_TYPE + sortingType.getUnlocalizedName())));
 
         addButton(new GuiButtonArrow(BUTTON_X_UP,   guiLeft + 8, guiTop + 21, 31, 15, GuiButtonArrow.ARROW_UP));
         addButton(new GuiButtonArrow(BUTTON_X_DOWN, guiLeft + 8, guiTop + 60, 31, 15, GuiButtonArrow.ARROW_DOWN));
@@ -168,7 +169,7 @@ public class GuiController extends GuiScreen {
 
             case BUTTON_TOGGLE_BOUNDS: {
                 nshowBounds = !nshowBounds;
-                buttonShowBounds.displayString = nshowBounds ? TEXT_HIDE_BOUNDS : TEXT_SHOW_BOUNDS;
+                buttonShowBounds.displayString = I18n.translateToLocal(nshowBounds ? TEXT_HIDE_BOUNDS : TEXT_SHOW_BOUNDS);
                 break;
             }
 
@@ -180,7 +181,7 @@ public class GuiController extends GuiScreen {
                     nsortingType = SortingType.VALUES[ord + 1];
                 }
 
-                buttonSortType.displayString = TEXT_SORTING_TYPE + nsortingType.name();
+                buttonSortType.displayString = I18n.translateToLocal(TEXT_SORTING_TYPE + nsortingType.name());
             }
 
             default: break;
@@ -229,8 +230,8 @@ public class GuiController extends GuiScreen {
         Minecraft.getMinecraft().renderEngine.bindTexture(GUI_TEXTURE);
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
 
-        fontRendererObj.drawString("Boundaries", guiLeft + 8, guiTop + 10, 4210752, false);
-        fontRendererObj.drawString("Other", guiLeft + 8, guiTop + 82, 4210752, false);
+        fontRendererObj.drawString(I18n.translateToLocal("gui.label.bounds"), guiLeft + 8, guiTop + 10, 4210752, false);
+        fontRendererObj.drawString(I18n.translateToLocal("gui.label.other"), guiLeft + 8, guiTop + 82, 4210752, false);
 
         super.drawScreen(mouseX, mouseY, partialTicks);
 

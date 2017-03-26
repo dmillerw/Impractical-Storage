@@ -5,4 +5,16 @@ tile.impstorage:crate.gold.name=Golden Crate
 tile.impstorage:crate.diamond.name=Diamond Crate
 tile.impstorage:crate.obsidian.name=Obsidian Crate
 
+tooltip.capacity.block=Block Capacity
+tooltip.capacity.item=Item Capacity
+
+gui.label.bounds=Boundaries
+gui.label.other=Other
+
+gui.text.bounds.show=Show Boundaries
+gui.text.bounds.hide=Hide Boundaries
+gui.text.sort_type.rows=Rows
+gui.text.sort_type.columns=Columns
+gui.text.sort_type.messy=Messy
+
 itemGroup.impstorage=Impractical Storage
