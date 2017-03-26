@@ -1,6 +1,7 @@
 package me.dmillerw.storage.client.render;
 
 import me.dmillerw.storage.block.tile.TileItemBlock;
+import me.dmillerw.storage.core.BlockOverrides;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -40,7 +41,7 @@ public class RenderTileItemBlock extends TileEntitySpecialRenderer<TileItemBlock
         }
 
         if (block) {
-            block = renderItem.shouldRenderItemIn3D(te.tileRenderItem);
+            block = !BlockOverrides.shouldTreatAsItem(te.tileRenderItem.getItem());
             if (block) {
                 Block b = Block.getBlockFromItem(te.tileRenderItem.getItem());
                 block = b.getRenderType(b.getDefaultState()) != EnumBlockRenderType.ENTITYBLOCK_ANIMATED;

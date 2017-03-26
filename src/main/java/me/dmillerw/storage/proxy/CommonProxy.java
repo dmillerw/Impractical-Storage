@@ -3,6 +3,7 @@ package me.dmillerw.storage.proxy;
 import me.dmillerw.storage.block.ModBlocks;
 import me.dmillerw.storage.block.tile.TileController;
 import me.dmillerw.storage.block.tile.TileItemBlock;
+import me.dmillerw.storage.core.BlockOverrides;
 import me.dmillerw.storage.core.handler.GuiHandler;
 import me.dmillerw.storage.lib.ModInfo;
 import net.minecraft.init.Items;
@@ -44,6 +45,8 @@ public class CommonProxy implements IProxy {
 
     @Override
     public void preInit(FMLPreInitializationEvent event) {
+        BlockOverrides.initialize();
+
         GuiHandler.register();
 
         GameRegistry.registerTileEntity(TileItemBlock.class, ModInfo.ID + ":item_block");
