@@ -22,6 +22,7 @@ public class BlockOverrides {
 
     public static void initialize() {
         Type mapType = new TypeToken<Map<String, Map<String, String>>>() {}.getType();
+        //TODO Merging/loading from config folder
         Reader reader = new InputStreamReader(ImpracticalStorage.class.getResourceAsStream("/assets/impstorage/mod/BlockOverrides.json"));
 
         // Example File:
