@@ -78,8 +78,6 @@ public class TileController extends TileCore implements ITickable {
             if (stack == null || stack.stackSize <= 0)
                 return null;
 
-            slot = getSlots() - slot - 1;
-
             ItemStack stackInSlot = controller.getStackInSlot(slot);
 
             int m;
@@ -513,19 +511,19 @@ public class TileController extends TileCore implements ITickable {
         worldToSlotMap = new int[height][xLength][zLength];
 
         if (sortingType == SortingType.COLUMNS) {
-            int slot = totalSize - 1;
+            int slot = 0;
             for (int x = 0; x < xLength; x++) {
                 for (int z = 0; z < zLength; z++) {
                     for (int y = 0; y < height; y++) {
                         slotToWorldMap[slot] = getLongFromPosition(x, y, z);
                         worldToSlotMap[y][x][z] = slot;
 
-                        slot--;
+                        slot++;
                     }
                 }
             }
         } else {
-            int slot = totalSize - 1;
+            int slot = 0;
             for (int y = 0; y < height; y++) {
                 for (int z = 0; z < zLength; z++) {
                     for (int x = 0; x < xLength; x++) {
@@ -538,7 +536,7 @@ public class TileController extends TileCore implements ITickable {
                                 worldToSlotMap[y][x][z] = -1;
                             }
 
-                            slot--;
+                            slot++;
                         }
                     }
                 }
@@ -578,7 +576,14 @@ public class TileController extends TileCore implements ITickable {
 
     public int getSlotForPosition(BlockPos pos) {
         pos = pos.subtract(origin);
-        return worldToSlotMap[pos.getY()][pos.getX()][pos.getZ()];
+        if (pos.getX() < 0 || pos.getY() < 0 || pos.getZ() < 0)
+            return -1;
+
+        try {
+            return worldToSlotMap[pos.getY()][pos.getX()][pos.getZ()];
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            return -1;
+        }
     }
 
     public ItemStack getStackForPosition(BlockPos pos) {
@@ -586,6 +591,7 @@ public class TileController extends TileCore implements ITickable {
     }
 
     public ItemStack getStackInSlot(int slot) {
+        if (slot == -1) return null;
         return inventory[slot];
     }
 
@@ -628,15 +634,38 @@ public class TileController extends TileCore implements ITickable {
 
         inventory[slot] = itemStack;
 
-        if (CommonProxy.useBlockQueue()) {
-            blockQueueTickCounter = 0;
-
-            QueueElement element = new QueueElement();
-            element.slot = slot;
-            element.itemStack = itemStack;
-            blockQueue.add(element);
+        if (itemStack == null || itemStack.stackSize <= 0) {
+            shiftInventory();
         } else {
-            setBlock(slot, itemStack);
+            if (CommonProxy.useBlockQueue()) {
+                blockQueueTickCounter = 0;
+
+                QueueElement element = new QueueElement();
+                element.slot = slot;
+                element.itemStack = itemStack;
+                blockQueue.add(element);
+            } else {
+                setBlock(slot, itemStack);
+            }
+        }
+    }
+
+    private void shiftInventory() {
+        ItemStack[] shifted = new ItemStack[totalSize];
+
+        int target = 0;
+        for (int i = 0; i < inventory.length; i++) {
+            ItemStack stack = inventory[i];
+            if (stack != null && stack.stackSize > 0) {
+                shifted[target] = stack;
+                target++;
+            }
+        }
+
+        this.inventory = shifted;
+
+        for (int i = 0; i < totalSize; i++) {
+            setBlock(i, getStackInSlot(i));
         }
     }
 
@@ -688,7 +717,7 @@ public class TileController extends TileCore implements ITickable {
             }
         }
 
-        f = f / (float)totalSize;
+        f = f / (float) totalSize;
 
         return MathHelper_1_11.floor(f * 14F) + (i > 0 ? 1 : 0);
     }
