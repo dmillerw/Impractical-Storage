@@ -9,19 +9,20 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockRendererDispatcher;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
-import net.minecraft.client.renderer.block.model.ItemOverrideList;
+import net.minecraft.client.renderer.RenderItem;
+import net.minecraft.client.renderer.block.model.*;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.property.IExtendedBlockState;
+import org.lwjgl.util.vector.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -35,6 +36,10 @@ public class ItemBlockBakedModel implements IBakedModel {
 
     private static BlockRendererDispatcher rendererDispatcher() {
         return Minecraft.getMinecraft().getBlockRendererDispatcher();
+    }
+
+    private static RenderItem renderItem() {
+        return Minecraft.getMinecraft().getRenderItem();
     }
 
     private VertexFormat format;
@@ -53,37 +58,57 @@ public class ItemBlockBakedModel implements IBakedModel {
         String renderValue = extendedBlockState.getValue(BlockItemBlock.RENDER_VALUE);
         int renderValueMeta = extendedBlockState.getValue(BlockItemBlock.RENDER_VALUE_META).intValue();
 
+        List<BakedQuad> quads = Lists.newArrayList();
+
         Block renderBlock;
         if (renderValue == null || renderValue.isEmpty()) {
             renderBlock = ModBlocks.crate;
             renderValueMeta = 0;
         } else {
-            final ItemStack itemStack = new ItemStack(Item.getByNameOrId(renderValue), 1, renderValueMeta);
-
-            if (isBlock) {
-                if (BlockOverrides.shouldTreatAsItem(itemStack.getItem())) {
-                    renderBlock = ModBlocks.crate;
-                    renderValueMeta = 0;
-                } else {
-                    renderBlock = Block.getBlockFromName(renderValue);
-                }
-            } else {
+            Item item = Item.getByNameOrId(renderValue);
+            if (item == null) {
                 renderBlock = ModBlocks.crate;
                 renderValueMeta = 0;
+            } else {
+                ItemStack itemStack = new ItemStack(Item.getByNameOrId(renderValue), 1, renderValueMeta);
+
+                if (!isBlock || BlockOverrides.shouldTreatAsItem(itemStack.getItem())) {
+                    renderBlock = ModBlocks.crate;
+                    renderValueMeta = 0;
+
+                    if (MinecraftForgeClient.getRenderLayer() == BlockRenderLayer.CUTOUT) {
+                        if (side != null && side != EnumFacing.UP && side != EnumFacing.DOWN) {
+                            IBakedModel model = renderItem().getItemModelMesher().getItemModel(itemStack);
+
+                            BlockPartFace blockPartFace = new BlockPartFace(side, 0, model.getParticleTexture().toString(), new BlockFaceUV(new float[]{0, 0, 16, 16}, 0));
+                            BlockPartRotation blockPartRotation = new BlockPartRotation(new Vector3f(0, 0, 0), EnumFacing.Axis.X, 0, false);
+
+                            final float shrink = 2.5F;
+                            final float minX = side == EnumFacing.EAST || side == EnumFacing.WEST ? -0.005F : shrink;
+                            final float maxX = side == EnumFacing.EAST || side == EnumFacing.WEST ? 16.005f : 16 - shrink;
+                            final float minZ = side == EnumFacing.EAST || side == EnumFacing.WEST ? shrink : -0.005F;
+                            final float maxZ = side == EnumFacing.EAST || side == EnumFacing.WEST ? 16 - shrink : 16.005F;
+
+                            BakedQuad itemQuad = new FaceBakery().makeBakedQuad(new Vector3f(minX, shrink, minZ), new Vector3f(maxX, 16 - shrink, maxZ), blockPartFace, model.getParticleTexture(), side, ModelRotation.X0_Y0, blockPartRotation, true, true);
+                            quads.add(itemQuad);
+                        }
+                    }
+                } else {
+                    renderBlock = Block.getBlockFromName(renderValue);
+                    if (renderBlock == null || renderBlock == Blocks.AIR) renderBlock = ModBlocks.crate;
+                }
             }
         }
 
         if (!renderBlock.canRenderInLayer(renderBlock.getDefaultState(), MinecraftForgeClient.getRenderLayer()))
-            return EMPTY_LIST;
+            return quads;
 
         IBlockState renderState = renderBlock.getStateFromMeta(renderValueMeta);
         IBakedModel model = rendererDispatcher().getModelForState(renderState);
 
-        try {
-            return model.getQuads(renderState, side, rand);
-        } catch (Exception ex) {
-            return rendererDispatcher().getBlockModelShapes().getModelForState(ModBlocks.crate.getDefaultState()).getQuads(renderState, side, rand);
-        }
+        quads.addAll(model.getQuads(renderState, side, rand));
+
+        return quads;
     }
 
     @Override
