@@ -181,7 +181,7 @@ public class GuiController extends GuiScreen {
                     nsortingType = SortingType.VALUES[ord + 1];
                 }
 
-                buttonSortType.displayString = I18n.translateToLocal(TEXT_SORTING_TYPE + nsortingType.name());
+                buttonSortType.displayString = I18n.translateToLocal(TEXT_SORTING_TYPE + nsortingType.getUnlocalizedName());
             }
 
             default: break;
