@@ -37,7 +37,7 @@ public class GuiController extends GuiScreen {
 
     private static final String TEXT_SHOW_BOUNDS = "gui.text.bounds.show";
     private static final String TEXT_HIDE_BOUNDS = "gui.text.bounds.hide";
-    private static final String TEXT_SORTING_TYPE = "gui.text.sort_type";
+    private static final String TEXT_SORTING_TYPE = "gui.text.sort_type.";
 
     private static final int BUTTON_X_UP = 0;
     private static final int BUTTON_X_DOWN = 1;
