@@ -72,21 +72,33 @@ public class TileItemBlock extends TileCore {
                 if (stack.getItem() instanceof ItemBlock) {
                     Block block = Block.getBlockFromItem(stack.getItem());
 
-                    isBlock = true;
-                    itemBlock = ForgeRegistries.BLOCKS.getKey(block).toString();
-                    itemBlockMeta = stack.getItemDamage();
+                    boolean n_isBlock = true;
+                    String n_itemBlock = ForgeRegistries.BLOCKS.getKey(block).toString();
+                    int n_itemBlockMeta = stack.getMetadata();
 
-                    markDirtyAndNotify();
+                    if (n_isBlock != isBlock || !(n_itemBlock.equals(itemBlock)) || n_itemBlockMeta != itemBlockMeta) {
+                        isBlock = n_isBlock;
+                        itemBlock = n_itemBlock;
+                        itemBlockMeta = n_itemBlockMeta;
+
+                        markDirtyAndNotify();
+                    }
 
                     return;
                 } else {
                     Item item = stack.getItem();
 
-                    isBlock = false;
-                    itemBlock = ForgeRegistries.ITEMS.getKey(item).toString();
-                    itemBlockMeta = stack.getItemDamage();
+                    boolean n_isBlock = false;
+                    String n_itemBlock = ForgeRegistries.ITEMS.getKey(item).toString();
+                    int n_itemBlockMeta = stack.getMetadata();
 
-                    markDirtyAndNotify();
+                    if (n_isBlock != isBlock || !(n_itemBlock.equals(itemBlock)) || n_itemBlockMeta != itemBlockMeta) {
+                        isBlock = n_isBlock;
+                        itemBlock = n_itemBlock;
+                        itemBlockMeta = n_itemBlockMeta;
+
+                        markDirtyAndNotify();
+                    }
 
                     return;
                 }
@@ -103,6 +115,9 @@ public class TileItemBlock extends TileCore {
         TileController controller = getController();
         if (controller != null) {
             int slot = controller.getSlotForPosition(pos);
+            if (slot == -1)
+                return ItemStack.EMPTY;
+
             ItemStack drop = controller.getStackInSlot(slot).copy();
             controller.setInventorySlotContents(slot, ItemStack.EMPTY);
             return drop;
