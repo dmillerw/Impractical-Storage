@@ -202,6 +202,7 @@ public class TileController extends TileCore implements ITickable {
     private int scanCounter = 0;
 
     public boolean showBounds = false;
+    private boolean shouldShiftInventory = false;
 
     private long[] slotToWorldMap = new long[0];
 
@@ -230,6 +231,7 @@ public class TileController extends TileCore implements ITickable {
             compound.setInteger("sortingType", sortingType.ordinal());
 
             compound.setBoolean("showBounds", showBounds);
+            compound.setBoolean("shouldShiftInventory", shouldShiftInventory);
 
             NBTTagList nbt_slotToWorldMap = new NBTTagList();
             for (int i = 0; i < slotToWorldMap.length; i++) {
@@ -316,6 +318,7 @@ public class TileController extends TileCore implements ITickable {
             sortingType = SortingType.VALUES[compound.getInteger("sortingType")];
 
             showBounds = compound.getBoolean("showBounds");
+            shouldShiftInventory = compound.getBoolean("shouldShiftInventory");
 
             inventory = NonNullList.withSize(totalSize, ItemStack.EMPTY);
 
@@ -387,6 +390,11 @@ public class TileController extends TileCore implements ITickable {
     @Override
     public void update() {
         if (!world.isRemote) {
+            if (shouldShiftInventory) {
+                shiftInventory();
+                shouldShiftInventory = false;
+            }
+
             if (CommonProxy.useBlockQueue()) {
                 blockQueueTickCounter++;
 
@@ -565,8 +573,6 @@ public class TileController extends TileCore implements ITickable {
                     inventory.set(i, ItemStack.EMPTY);
                 }
             }
-
-            dropInventory();
         }
 
         clearInventory();
@@ -643,18 +649,16 @@ public class TileController extends TileCore implements ITickable {
         inventory.set(slot, itemStack);
 
         if (itemStack.isEmpty()) {
-            shiftInventory();
-        } else {
-            if (CommonProxy.useBlockQueue()) {
-                blockQueueTickCounter = 0;
+            shouldShiftInventory = true;
+        } else if (CommonProxy.useBlockQueue()) {
+            blockQueueTickCounter = 0;
 
-                QueueElement element = new QueueElement();
-                element.slot = slot;
-                element.itemStack = itemStack;
-                blockQueue.add(element);
-            } else {
-                setBlock(slot, itemStack);
-            }
+            QueueElement element = new QueueElement();
+            element.slot = slot;
+            element.itemStack = itemStack;
+            blockQueue.add(element);
+        } else {
+            setBlock(slot, itemStack);
         }
     }
 
@@ -662,7 +666,7 @@ public class TileController extends TileCore implements ITickable {
         NonNullList<ItemStack> shifted = NonNullList.withSize(totalSize, ItemStack.EMPTY);
 
         int target = 0;
-        for (int i=0; i<inventory.size(); i++) {
+        for (int i = 0; i < inventory.size(); i++) {
             ItemStack stack = inventory.get(i);
             if (!stack.isEmpty()) {
                 shifted.set(target, stack);
@@ -672,7 +676,7 @@ public class TileController extends TileCore implements ITickable {
 
         this.inventory = shifted;
 
-        for (int i=0; i<totalSize; i++) {
+        for (int i = 0; i < totalSize; i++) {
             setBlock(i, getStackInSlot(i));
         }
     }
@@ -725,7 +729,7 @@ public class TileController extends TileCore implements ITickable {
             }
         }
 
-        f = f / (float)totalSize;
+        f = f / (float) totalSize;
 
         return MathHelper.floor(f * 14F) + (i > 0 ? 1 : 0);
     }
