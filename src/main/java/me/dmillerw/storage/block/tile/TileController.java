@@ -570,9 +570,9 @@ public class TileController extends TileCore implements ITickable {
 
         for (int i = 0; i < totalSize; i++) {
             ItemStack stack = getStackInSlot(i);
-            if (stack != null) {
+            if (!stack.isEmpty()) {
                 BlockPos pos = BlockPos.fromLong(slotToWorldMap[i]).add(origin);
-                setBlock(i, null);
+                setBlock(i, ItemStack.EMPTY);
 
                 InventoryHelper.spawnItemStack(getWorld(), pos.getX(), pos.getY(), pos.getZ(), stack);
 
