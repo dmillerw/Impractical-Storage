@@ -193,6 +193,7 @@ public class TileController extends TileCore implements ITickable {
     private int scanCounter = 0;
 
     public boolean showBounds = false;
+    private boolean shouldShiftInventory = false;
 
     private long[] slotToWorldMap = new long[0];
 
@@ -221,6 +222,7 @@ public class TileController extends TileCore implements ITickable {
             compound.setInteger("sortingType", sortingType.ordinal());
 
             compound.setBoolean("showBounds", showBounds);
+            compound.setBoolean("shouldShiftInventory", shouldShiftInventory);
 
             NBTTagList nbt_slotToWorldMap = new NBTTagList();
             for (int i = 0; i < slotToWorldMap.length; i++) {
@@ -307,6 +309,7 @@ public class TileController extends TileCore implements ITickable {
             sortingType = SortingType.VALUES[compound.getInteger("sortingType")];
 
             showBounds = compound.getBoolean("showBounds");
+            shouldShiftInventory = compound.getBoolean("shouldShiftInventory");
 
             inventory = new ItemStack[totalSize];
 
@@ -378,6 +381,11 @@ public class TileController extends TileCore implements ITickable {
     @Override
     public void update() {
         if (!getWorld().isRemote) {
+            if (shouldShiftInventory) {
+                shiftInventory();
+                shouldShiftInventory = false;
+            }
+
             if (CommonProxy.useBlockQueue()) {
                 blockQueueTickCounter++;
 
@@ -551,7 +559,7 @@ public class TileController extends TileCore implements ITickable {
     public void dropInventory() {
         TileItemBlock.DROPS = false;
 
-        for (int i=0; i<totalSize; i++) {
+        for (int i = 0; i < totalSize; i++) {
             ItemStack stack = getStackInSlot(i);
             if (stack != null) {
                 BlockPos pos = BlockPos.fromLong(slotToWorldMap[i]).add(origin);
@@ -630,7 +638,7 @@ public class TileController extends TileCore implements ITickable {
         inventory[slot] = itemStack;
 
         if (itemStack == null || itemStack.stackSize <= 0) {
-            shiftInventory();
+            shouldShiftInventory = true;
         } else {
             if (CommonProxy.useBlockQueue()) {
                 blockQueueTickCounter = 0;
