@@ -20,17 +20,19 @@ public class PacketConfig implements IMessage {
 
     protected BlockPos destination;
 
-    protected int x;
-    protected int y;
-    protected int z;
+    protected int boundX;
+    protected int boundY;
+    protected int boundZ;
+
+    protected int offsetX;
+    protected int offsetY;
+    protected int offsetZ;
 
     protected SortingType sortingType;
 
-    protected boolean showBounds;
-
     private boolean dimensions;
+    private boolean offset;
     private boolean sort;
-    private boolean bounds;
 
     public PacketConfig() {
     }
@@ -41,19 +43,21 @@ public class PacketConfig implements IMessage {
 
     public void setBoundaryDimensions(int x, int y, int z) {
         this.dimensions = true;
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        this.boundX = x;
+        this.boundY = y;
+        this.boundZ = z;
+    }
+
+    public void setOffsetDimension(int x, int y, int z) {
+        this.offset = true;
+        this.offsetX = x;
+        this.offsetY = y;
+        this.offsetZ = z;
     }
 
     public void setSortingType(SortingType sortingType) {
         this.sort = true;
         this.sortingType = sortingType;
-    }
-
-    public void setShowBounds(boolean showBounds) {
-        this.bounds = true;
-        this.showBounds = showBounds;
     }
 
     @Override
@@ -62,14 +66,17 @@ public class PacketConfig implements IMessage {
 
         buf.writeBoolean(dimensions);
         if (dimensions) {
-            buf.writeInt(x);
-            buf.writeInt(y);
-            buf.writeInt(z);
+            buf.writeInt(boundX);
+            buf.writeInt(boundY);
+            buf.writeInt(boundZ);
         }
 
-        buf.writeBoolean(bounds);
-        if (bounds)
-            buf.writeBoolean(showBounds);
+        buf.writeBoolean(offset);
+        if (offset) {
+            buf.writeInt(offsetX);
+            buf.writeInt(offsetY);
+            buf.writeInt(offsetZ);
+        }
 
         buf.writeBoolean(sort);
         if (sort)
@@ -81,13 +88,16 @@ public class PacketConfig implements IMessage {
         destination = BlockPos.fromLong(buf.readLong());
 
         if (dimensions = buf.readBoolean()) {
-            x = buf.readInt();
-            y = buf.readInt();
-            z = buf.readInt();
+            boundX = buf.readInt();
+            boundY = buf.readInt();
+            boundZ = buf.readInt();
         }
 
-        if (bounds = buf.readBoolean())
-            showBounds = buf.readBoolean();
+        if (offset = buf.readBoolean()) {
+            offsetX = buf.readInt();
+            offsetY = buf.readInt();
+            offsetZ = buf.readInt();
+        }
 
         if (sort = buf.readBoolean())
             sortingType = SortingType.VALUES[buf.readInt()];
@@ -107,13 +117,16 @@ public class PacketConfig implements IMessage {
                     if (message.dimensions) {
                         controller.updateRawBounds(
                                 state.getValue(BlockController.FACING),
-                                message.x,
-                                message.y,
-                                message.z);
+                                message.boundX,
+                                message.boundY,
+                                message.boundZ);
                     }
 
-                    if (message.bounds)
-                        controller.setShowBounds(message.showBounds);
+                    if (message.offset)
+                        controller.updateOffset(
+                                message.offsetX,
+                                message.offsetY,
+                                message.offsetZ);
 
                     if (message.sort)
                         controller.setSortingType(message.sortingType);

@@ -9,12 +9,13 @@ tooltip.capacity.block=Block Capacity
 tooltip.capacity.item=Item Capacity
 
 gui.label.bounds=Boundaries
+gui.label.offset=Offset
 gui.label.other=Other
 
 gui.text.bounds.show=Show Boundaries
 gui.text.bounds.hide=Hide Boundaries
-gui.text.sort_type.rows=Rows
-gui.text.sort_type.columns=Columns
-gui.text.sort_type.messy=Messy
+gui.text.sort_type.rows=Sort Mode: Rows
+gui.text.sort_type.columns=Sort Mode: Columns
+gui.text.sort_type.messy=Sort Mode: Messy
 
 itemGroup.impstorage=Impractical Storage

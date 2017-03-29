@@ -183,6 +183,8 @@ public class TileController extends TileCore implements ITickable {
     public int rawY = CommonProxy.defaultY;
     public int rawZ = CommonProxy.defaultZ;
 
+    public BlockPos offset = BlockPos.ORIGIN;
+
     public int height = 1;
     public int xLength = 1;
     public int zLength = 1;
@@ -215,13 +217,14 @@ public class TileController extends TileCore implements ITickable {
             compound.setInteger("rawY", rawY);
             compound.setInteger("rawZ", rawZ);
 
+            compound.setLong("offset", offset.toLong());
+
             compound.setInteger("height", height);
             compound.setInteger("xLength", xLength);
             compound.setInteger("zLength", zLength);
 
             compound.setInteger("sortingType", sortingType.ordinal());
 
-            compound.setBoolean("showBounds", showBounds);
             compound.setBoolean("shouldShiftInventory", shouldShiftInventory);
 
             NBTTagList nbt_slotToWorldMap = new NBTTagList();
@@ -301,6 +304,8 @@ public class TileController extends TileCore implements ITickable {
             rawY = compound.getInteger("rawY");
             rawZ = compound.getInteger("rawZ");
 
+            offset = BlockPos.fromLong(compound.getLong("offset"));
+
             height = compound.getInteger("height");
             xLength = compound.getInteger("xLength");
             zLength = compound.getInteger("zLength");
@@ -308,7 +313,6 @@ public class TileController extends TileCore implements ITickable {
 
             sortingType = SortingType.VALUES[compound.getInteger("sortingType")];
 
-            showBounds = compound.getBoolean("showBounds");
             shouldShiftInventory = compound.getBoolean("shouldShiftInventory");
 
             inventory = new ItemStack[totalSize];
@@ -367,10 +371,6 @@ public class TileController extends TileCore implements ITickable {
                 updateRawBounds(facing, rawX, rawY, rawZ);
             }
         }
-    }
-
-    public void setShowBounds(boolean showBounds) {
-        this.showBounds = showBounds;
     }
 
     public void setSortingType(SortingType sortingType) {
@@ -444,6 +444,11 @@ public class TileController extends TileCore implements ITickable {
         return origin != null && end != null;
     }
 
+    public void updateOffset(int x, int y, int z) {
+        this.offset = new BlockPos(x, y, z);
+        this.updateRawBounds(worldObj.getBlockState(pos).getValue(BlockController.FACING), rawX, rawY, rawZ);
+    }
+
     public void updateRawBounds(EnumFacing facing, int x, int y, int z) {
         EnumFacing posX = facing.rotateY();
         EnumFacing negX = posX.getOpposite();
@@ -473,13 +478,13 @@ public class TileController extends TileCore implements ITickable {
                 Math.min(origin.getX(), end.getX()),
                 Math.min(origin.getY(), end.getY()),
                 Math.min(origin.getZ(), end.getZ())
-        );
+        ).add(offset);
 
         BlockPos high = new BlockPos(
                 Math.max(origin.getX(), end.getX()),
                 Math.max(origin.getY(), end.getY()),
                 Math.max(origin.getZ(), end.getZ())
-        );
+        ).add(offset);
 
         setBounds(low, high);
     }
