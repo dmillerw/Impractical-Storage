@@ -16,6 +16,8 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
  */
 public class TileItemBlock extends TileCore {
 
+    public static boolean DROPS = true;
+
     public ItemStack tileRenderItem;
 
     public boolean isBlock;
@@ -112,6 +114,8 @@ public class TileItemBlock extends TileCore {
     }
 
     public ItemStack getDrop() {
+        if (!DROPS) return null;
+
         TileController controller = getController();
         if (controller != null) {
             int slot = controller.getSlotForPosition(pos);
@@ -120,7 +124,7 @@ public class TileItemBlock extends TileCore {
                 ItemStack drop = controller.getStackInSlot(slot);
                 if (drop != null && drop.stackSize > 0) drop = drop.copy();
 
-                controller.setInventorySlotContents(slot, null);
+//                controller.setInventorySlotContents(slot, null);
                 return drop;
             } else {
                 return null;
