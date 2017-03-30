@@ -51,6 +51,25 @@ public abstract class PositionHandler {
         }
     };
 
+    public static final PositionHandler PYRAMID_HANDLER = new PositionHandler() {
+        @Override
+        public void bake(TileController tile) {
+            int slot = 0;
+            for (int y=0; y<tile.height; y++) {
+                for (int x=y; x<tile.xLength - y; x++) {
+                    for (int z=y; z<tile.zLength - y; z++) {
+                        if (!tile.worldOcclusionMap[y][x][z]) {
+                            tile.slotToWorldMap[slot] = TileController.getLongFromPosition(x, y, z);
+                            tile.worldToSlotMap[y][x][z] = slot;
+
+                            slot++;
+                        }
+                    }
+                }
+            }
+        }
+    };
+
     public static final PositionHandler MESSY_HANDLER = new PositionHandler() {
 
         @Override
