@@ -16,6 +16,7 @@ gui.text.bounds.show=Show Boundaries
 gui.text.bounds.hide=Hide Boundaries
 gui.text.sort_type.rows=Sort Mode: Rows
 gui.text.sort_type.columns=Sort Mode: Columns
+gui.text.sort_type.pyramid=Sort Mode: Pyramid
 gui.text.sort_type.messy=Sort Mode: Messy
 
 itemGroup.impstorage=Impractical Storage
