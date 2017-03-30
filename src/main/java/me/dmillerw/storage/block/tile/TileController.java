@@ -49,7 +49,7 @@ public class TileController extends TileCore implements ITickable {
     private static final int MAX_BLOCK_STACK_SIZE = 1;
     private static final int MAX_ITEM_STACK_SIZE = 16;
 
-    private static long getLongFromPosition(int x, int y, int z) {
+    public static long getLongFromPosition(int x, int y, int z) {
         return ((long) x & X_MASK) << X_SHIFT | ((long) y & Y_MASK) << Y_SHIFT | ((long) z & Z_MASK) << 0;
     }
 
@@ -206,11 +206,11 @@ public class TileController extends TileCore implements ITickable {
     public boolean showBounds = false;
     private boolean shouldShiftInventory = false;
 
-    private long[] slotToWorldMap = new long[0];
+    public long[] slotToWorldMap = new long[0];
 
     // [Y][X][Z]
-    private int[][][] worldToSlotMap = new int[0][0][0];
-    private boolean[][][] worldOcclusionMap = new boolean[0][0][0];
+    public int[][][] worldToSlotMap = new int[0][0][0];
+    public boolean[][][] worldOcclusionMap = new boolean[0][0][0];
 
     // Block Queue
     private ArrayDeque<QueueElement> blockQueue = new ArrayDeque<>();
@@ -536,31 +536,16 @@ public class TileController extends TileCore implements ITickable {
         slotToWorldMap = new long[totalSize];
         worldToSlotMap = new int[height][xLength][zLength];
 
-        if (sortingType == SortingType.COLUMNS) {
-            int slot = 0;
-            for (int x = 0; x < xLength; x++) {
-                for (int z = 0; z < zLength; z++) {
-                    for (int y = 0; y < height; y++) {
-                        slotToWorldMap[slot] = getLongFromPosition(x, y, z);
-                        worldToSlotMap[y][x][z] = slot;
-
-                        slot++;
-                    }
-                }
-            }
+        if (sortingType.isBaked()) {
+            sortingType.getPositionHandler().bake(this);
         } else {
             int slot = 0;
             for (int y = 0; y < height; y++) {
                 for (int z = 0; z < zLength; z++) {
                     for (int x = 0; x < xLength; x++) {
                         if (!worldOcclusionMap[y][x][z]) {
-                            if (sortingType == SortingType.ROWS) {
-                                slotToWorldMap[slot] = getLongFromPosition(x, y, z);
-                                worldToSlotMap[y][x][z] = slot;
-                            } else {
-                                slotToWorldMap[slot] = -1;
-                                worldToSlotMap[y][x][z] = -1;
-                            }
+                            slotToWorldMap[slot] = -1;
+                            worldToSlotMap[y][x][z] = -1;
 
                             slot++;
                         }
@@ -618,7 +603,7 @@ public class TileController extends TileCore implements ITickable {
         return inventory.get(slot);
     }
 
-    private BlockPos getNextRandomPosition() {
+    public BlockPos getNextRandomPosition() {
         int x = random.nextInt(xLength);
         int y = 0;
         int z = random.nextInt(zLength);
@@ -644,14 +629,8 @@ public class TileController extends TileCore implements ITickable {
 
     public void setInventorySlotContents(int slot, ItemStack itemStack) {
         if (!itemStack.isEmpty()) {
-            if (sortingType == SortingType.MESSY) {
-                long longPos = slotToWorldMap[slot];
-                if (longPos == -1) {
-                    BlockPos pos = getNextRandomPosition();
-
-                    slotToWorldMap[slot] = pos.toLong();
-                    worldToSlotMap[pos.getY()][pos.getX()][pos.getZ()] = slot;
-                }
+            if (!sortingType.isBaked()) {
+                sortingType.getPositionHandler().runtime(this, slot);
             }
         }
 

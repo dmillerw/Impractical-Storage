@@ -257,6 +257,7 @@ public class GuiController extends GuiScreen {
 
             case BUTTON_TOGGLE_BOUNDS: {
                 this.tile.showBounds = !this.tile.showBounds;
+                buttonShowBounds.displayString = I18n.translateToLocal(this.tile.showBounds ? TEXT_HIDE_BOUNDS : TEXT_SHOW_BOUNDS);
                 break;
             }
 
