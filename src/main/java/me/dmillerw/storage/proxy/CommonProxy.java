@@ -7,6 +7,7 @@ import me.dmillerw.storage.block.tile.TileItemBlock;
 import me.dmillerw.storage.core.BlockOverrides;
 import me.dmillerw.storage.core.handler.GuiHandler;
 import me.dmillerw.storage.lib.ModInfo;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.config.Configuration;
@@ -62,6 +63,14 @@ public class CommonProxy implements IProxy {
                 'I', "ingotIron",
                 'R', Items.REDSTONE,
                 'C', "chest"));
+
+        // Controller Interface - Crafting Recipe
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(ModBlocks.controller_interface),
+                "IRI",
+                " H ",
+                'I', "ingotIron",
+                'R', Items.REDSTONE,
+                'H', Blocks.HOPPER));
     }
 
     @Override
