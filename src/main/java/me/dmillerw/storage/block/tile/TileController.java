@@ -197,7 +197,7 @@ public class TileController extends TileCore implements ITickable {
     public int height = 1;
     public int xLength = 1;
     public int zLength = 1;
-    private int totalSize;
+    public int totalSize;
 
     public SortingType sortingType = SortingType.ROWS;
 
@@ -517,19 +517,7 @@ public class TileController extends TileCore implements ITickable {
 
         worldOcclusionMap = new boolean[height][xLength][zLength];
 
-        int occludedSpots = 0;
-        for (int y = 0; y < height; y++) {
-            for (int z = 0; z < zLength; z++) {
-                for (int x = 0; x < xLength; x++) {
-                    if (!world.isAirBlock(origin.add(x, y, z))) {
-                        worldOcclusionMap[y][x][z] = true;
-                        occludedSpots++;
-                    }
-                }
-            }
-        }
-
-        totalSize = (height * xLength * zLength) - occludedSpots;
+        sortingType.getSizeCalculator().calculate(this);
 
         inventory = NonNullList.withSize(totalSize, ItemStack.EMPTY);
 

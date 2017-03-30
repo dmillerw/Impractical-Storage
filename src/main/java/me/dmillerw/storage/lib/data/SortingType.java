@@ -1,23 +1,24 @@
 package me.dmillerw.storage.lib.data;
 
-import static me.dmillerw.storage.lib.data.PositionHandler.*;
-
 /**
  * @author dmillerw
  */
 public enum SortingType {
 
-    ROWS("rows", BAKED, ROW_HANDLER),
-    COLUMNS("columns", BAKED, COLUMN_HANDLER),
-    MESSY("messy", RUNTIME, MESSY_HANDLER);
+    ROWS("rows", PositionHandler.BAKED, PositionHandler.ROW_HANDLER, SizeCalculator.DEFAULT),
+    COLUMNS("columns", PositionHandler.BAKED, PositionHandler.COLUMN_HANDLER, SizeCalculator.DEFAULT),
+    PYRAMID("pyramid", PositionHandler.BAKED, PositionHandler.PYRAMID_HANDLER, SizeCalculator.PYRAMID),
+    MESSY("messy", PositionHandler.RUNTIME, PositionHandler.MESSY_HANDLER, SizeCalculator.DEFAULT);
 
     private final String name;
     private final byte type;
     private final PositionHandler positionHandler;
-    private SortingType(String name, byte type, PositionHandler positionHandler) {
+    private final SizeCalculator sizeCalculator;
+    private SortingType(String name, byte type, PositionHandler positionHandler, SizeCalculator sizeCalculator) {
         this.name = name;
         this.type = type;
         this.positionHandler = positionHandler;
+        this.sizeCalculator = sizeCalculator;
     }
 
     public String getUnlocalizedName() {
@@ -28,8 +29,12 @@ public enum SortingType {
         return positionHandler;
     }
 
+    public SizeCalculator getSizeCalculator() {
+        return sizeCalculator;
+    }
+
     public boolean isBaked() {
-        return this.type == BAKED;
+        return this.type == PositionHandler.BAKED;
     }
 
     public static final SortingType[] VALUES = values();
