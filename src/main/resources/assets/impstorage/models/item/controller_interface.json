@@ -1,7 +1,7 @@
 {
   "parent": "block/cube_all",
   "textures": {
-    "all": "impstorage:blocks/controller_interface"
+    "all": "impstorage:blocks/controller_interface_active"
   },
   "display": {
     "thirdperson": {
