@@ -16,7 +16,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 /**
  * @author dmillerw
  */
-public class PacketConfig implements IMessage {
+public class SControllerConfig implements IMessage {
 
     protected BlockPos destination;
 
@@ -34,10 +34,10 @@ public class PacketConfig implements IMessage {
     private boolean offset;
     private boolean sort;
 
-    public PacketConfig() {
+    public SControllerConfig() {
     }
 
-    public PacketConfig(BlockPos destination) {
+    public SControllerConfig(BlockPos destination) {
         this.destination = destination;
     }
 
@@ -103,10 +103,10 @@ public class PacketConfig implements IMessage {
             sortingType = SortingType.VALUES[buf.readInt()];
     }
 
-    public static class Handler implements IMessageHandler<PacketConfig, IMessage> {
+    public static class Handler implements IMessageHandler<SControllerConfig, IMessage> {
 
         @Override
-        public IMessage onMessage(PacketConfig message, MessageContext ctx) {
+        public IMessage onMessage(SControllerConfig message, MessageContext ctx) {
             Minecraft.getMinecraft().addScheduledTask(() -> {
                 World world = ctx.getServerHandler().playerEntity.world;
                 IBlockState state = world.getBlockState(message.destination);

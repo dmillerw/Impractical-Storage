@@ -182,7 +182,7 @@ public class TileController extends TileCore implements ITickable {
 
     private Random random = new Random();
 
-    private ItemHandler itemHandler = new ItemHandler(this);
+    public ItemHandler itemHandler = new ItemHandler(this);
     public NonNullList<ItemStack> inventory = NonNullList.create();
 
     public BlockPos origin = null;
@@ -412,7 +412,26 @@ public class TileController extends TileCore implements ITickable {
                 }
             }
 
+            if (world.getTotalWorldTime() % 10 == 0) {
+                // Search for interfaces
+                for (int y = -1; y <= height; y++) {
+                    for (int z = -1; z <= zLength; z++) {
+                        for (int x = -1; x <= xLength; x++) {
+                            if (y == -1 || y == height || z == -1 || z == zLength || x == -1 || x == xLength) {
+                                BlockPos pos = origin.add(x, y, z);
+                                if (world.getBlockState(pos).getBlock() == ModBlocks.controller_interface) {
+                                    TileControllerInterface tile = (TileControllerInterface) getWorld().getTileEntity(pos);
+                                    if (tile != null)
+                                        tile.registerController(this);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             if (scanCounter >= CommonProxy.blockUpdateRate) {
+                // Search for blocks to add to inventory
                 for (int y = 0; y < height; y++) {
                     for (int z = 0; z < zLength; z++) {
                         for (int x = 0; x < xLength; x++) {

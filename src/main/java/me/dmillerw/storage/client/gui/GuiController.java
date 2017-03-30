@@ -6,7 +6,7 @@ import me.dmillerw.storage.client.gui.widget.GuiButtonArrow;
 import me.dmillerw.storage.lib.ModInfo;
 import me.dmillerw.storage.lib.data.SortingType;
 import me.dmillerw.storage.network.PacketHandler;
-import me.dmillerw.storage.network.packet.PacketConfig;
+import me.dmillerw.storage.network.packet.SControllerConfig;
 import me.dmillerw.storage.proxy.CommonProxy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
@@ -305,7 +305,7 @@ public class GuiController extends GuiScreen {
         offsetY.setText(Integer.toString(offY));
         offsetZ.setText(Integer.toString(offZ));
 
-        PacketConfig packet = new PacketConfig(tile.getPos());
+        SControllerConfig packet = new SControllerConfig(tile.getPos());
 
         if (ox != nx || oy != ny || oz != nz)
             packet.setBoundaryDimensions(nx, ny, nz);
