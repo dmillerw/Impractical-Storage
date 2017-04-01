@@ -399,17 +399,22 @@ public class TileController extends TileCore implements ITickable {
                 shouldShiftInventory = false;
             }
 
-            if (CommonProxy.useBlockQueue()) {
-                blockQueueTickCounter++;
+            blockQueueTickCounter++;
 
-                if (blockQueueTickCounter >= CommonProxy.blockUpdateRate) {
+            if (CommonProxy.blockUpdateRate == -1 || blockQueueTickCounter >= CommonProxy.blockUpdateRate) {
+                if (CommonProxy.blockUpdateBatch == -1) {
+                    for (int i = 0; i < blockQueue.size(); i++) {
+                        QueueElement element = blockQueue.pop();
+                        setBlock(element.slot, element.itemStack);
+                    }
+                } else {
                     for (int i = 0; i < Math.min(blockQueue.size(), CommonProxy.blockUpdateBatch); i++) {
                         QueueElement element = blockQueue.pop();
                         setBlock(element.slot, element.itemStack);
                     }
-
-                    blockQueueTickCounter = 0;
                 }
+
+                blockQueueTickCounter = 0;
             }
 
             if (world.getTotalWorldTime() % 10 == 0) {
@@ -645,15 +650,14 @@ public class TileController extends TileCore implements ITickable {
 
         if (itemStack.isEmpty()) {
             shouldShiftInventory = true;
-        } else if (CommonProxy.useBlockQueue()) {
-            blockQueueTickCounter = 0;
-
-            QueueElement element = new QueueElement();
-            element.slot = slot;
-            blockQueue.add(element);
-        } else {
-            setBlock(slot, itemStack);
         }
+
+        blockQueueTickCounter = 0;
+
+        QueueElement element = new QueueElement();
+        element.slot = slot;
+        element.itemStack = itemStack;
+        blockQueue.add(element);
     }
 
     private void shiftInventory() {
