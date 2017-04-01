@@ -1,9 +1,16 @@
 tile.impstorage:controller.name=Storage Controller
+tile.impstorage:controller_interface.name=Controller Interface
+
 tile.impstorage:crate.wood.name=Wooden Crate
 tile.impstorage:crate.iron.name=Iron Crate
 tile.impstorage:crate.gold.name=Golden Crate
 tile.impstorage:crate.diamond.name=Diamond Crate
 tile.impstorage:crate.obsidian.name=Obsidian Crate
+
+tile.impstorage:phantom.name=Phantom Block
+
+tooltip.phantom.type.block=Block
+tooltip.phantom.type.column=Column
 
 tooltip.capacity.block=Block Capacity
 tooltip.capacity.item=Item Capacity
