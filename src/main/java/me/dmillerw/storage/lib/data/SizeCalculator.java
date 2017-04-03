@@ -7,6 +7,10 @@ import me.dmillerw.storage.block.tile.TileController;
  */
 public abstract class SizeCalculator {
 
+    private static final boolean isBlockOccluded(TileController tile, int x, int y, int z) {
+        return tile.worldOcclusionMap[y][x][z] || !tile.getWorld().isAirBlock(tile.origin.add(x, y, z));
+    }
+
     public static final SizeCalculator DEFAULT = new SizeCalculator() {
 
         @Override
@@ -15,7 +19,7 @@ public abstract class SizeCalculator {
             for (int y = 0; y < tile.height; y++) {
                 for (int z = 0; z < tile.zLength; z++) {
                     for (int x = 0; x < tile.xLength; x++) {
-                        if (!tile.getWorld().isAirBlock(tile.origin.add(x, y, z))) {
+                        if (SizeCalculator.isBlockOccluded(tile, x, y, z)) {
                             tile.worldOcclusionMap[y][x][z] = true;
                             occludedSpots++;
                         }
@@ -36,7 +40,7 @@ public abstract class SizeCalculator {
             for (int y = 0; y < tile.height; y++) {
                 for (int x = y; x < tile.xLength - y; x++) {
                     for (int z = y; z < tile.zLength - y; z++) {
-                        if (!tile.getWorld().isAirBlock(tile.origin.add(x, y, z))) {
+                        if (SizeCalculator.isBlockOccluded(tile, x, y, z)) {
                             tile.worldOcclusionMap[y][x][z] = true;
                             occludedSpots++;
                         } else {

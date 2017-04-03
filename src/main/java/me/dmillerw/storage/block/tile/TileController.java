@@ -1,6 +1,7 @@
 package me.dmillerw.storage.block.tile;
 
 import me.dmillerw.storage.block.BlockController;
+import me.dmillerw.storage.block.BlockPhantom;
 import me.dmillerw.storage.block.ModBlocks;
 import me.dmillerw.storage.lib.compat.ItemStackHelper;
 import me.dmillerw.storage.lib.compat.MathHelper_1_11;
@@ -526,6 +527,23 @@ public class TileController extends TileCore implements ITickable {
         zLength = 1 + end.getZ() - origin.getZ();
 
         worldOcclusionMap = new boolean[height][xLength][zLength];
+
+        // Occlusion map gets prefilled with all phantom blocks
+        for (int y = 0; y < height; y++) {
+            for (int z = 0; z < zLength; z++) {
+                for (int x = 0; x < xLength; x++) {
+                    IBlockState state = worldObj.getBlockState(origin.add(x, y, z));
+                    if (state.getBlock() == ModBlocks.phantom) {
+                        BlockPhantom.EnumType type = state.getValue(BlockPhantom.TYPE);
+                        if (type == BlockPhantom.EnumType.BLOCK) {
+                            worldOcclusionMap[y][x][z] = true;
+                        } else if (type == BlockPhantom.EnumType.COLUMN) {
+                            for (int i = 0; i < height; i++) worldOcclusionMap[i][x][z] = true;
+                        }
+                    }
+                }
+            }
+        }
 
         sortingType.getSizeCalculator().calculate(this);
 

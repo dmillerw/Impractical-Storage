@@ -1,6 +1,7 @@
 package me.dmillerw.storage.block;
 
 import me.dmillerw.storage.block.item.ItemBlockCrate;
+import me.dmillerw.storage.block.item.ItemBlockPhantom;
 import me.dmillerw.storage.lib.ModInfo;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -32,6 +33,10 @@ public class ModBlocks {
     @GameRegistry.ObjectHolder(ModInfo.ID + ":crate")
     public static final ItemBlock crate_item = null;
 
+    public static final BlockPhantom phantom = null;
+    @GameRegistry.ObjectHolder(ModInfo.ID + ":phantom")
+    public static final ItemBlock phantom_item = null;
+
     @Mod.EventBusSubscriber
     public static class RegistrationHandler {
 
@@ -41,7 +46,8 @@ public class ModBlocks {
                     new BlockItemBlock().setRegistryName(ModInfo.ID, "item_block"),
                     new BlockController().setRegistryName(ModInfo.ID, "controller"),
                     new BlockControllerInterface().setRegistryName(ModInfo.ID, "controller_interface"),
-                    new BlockCrate().setRegistryName(ModInfo.ID, "crate")
+                    new BlockCrate().setRegistryName(ModInfo.ID, "crate"),
+                    new BlockPhantom().setRegistryName(ModInfo.ID, "phantom")
             );
         }
 
@@ -51,7 +57,8 @@ public class ModBlocks {
                     new ItemBlock(item_block).setRegistryName(ModInfo.ID, "item_block"),
                     new ItemBlock(controller).setRegistryName(ModInfo.ID, "controller"),
                     new ItemBlock(controller_interface).setRegistryName(ModInfo.ID, "controller_interface"),
-                    new ItemBlockCrate(crate).setRegistryName(ModInfo.ID, "crate")
+                    new ItemBlockCrate(crate).setRegistryName(ModInfo.ID, "crate"),
+                    new ItemBlockPhantom(phantom).setRegistryName(ModInfo.ID, "phantom")
             );
         }
     }
