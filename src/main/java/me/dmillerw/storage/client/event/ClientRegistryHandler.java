@@ -20,6 +20,7 @@ public class ClientRegistryHandler {
     public static void registerModels(ModelRegistryEvent event) {
         registerItemModel(ModBlocks.controller_item);
         registerItemModel(ModBlocks.controller_interface_item);
+        registerItemModel(ModBlocks.phantom_item);
 
         for (BlockCrate.EnumType type : BlockCrate.EnumType.values()) {
             registerItemModel(ModBlocks.crate_item, "variant", type);

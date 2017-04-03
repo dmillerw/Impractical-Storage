@@ -15,6 +15,8 @@ import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IBlockAccess;
 
 import javax.annotation.Nullable;
@@ -43,6 +45,13 @@ public class BlockPhantom extends Block {
     }
 
     //TODO Hide bounding-box unless holding item
+
+
+    @Nullable
+    @Override
+    protected RayTraceResult rayTrace(BlockPos pos, Vec3d start, Vec3d end, AxisAlignedBB boundingBox) {
+        return super.rayTrace(pos, start, end, boundingBox);
+    }
 
     @Nullable
     @Override
