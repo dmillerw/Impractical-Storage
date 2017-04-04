@@ -395,6 +395,9 @@ public class TileController extends TileCore implements ITickable {
     @Override
     public void update() {
         if (!world.isRemote) {
+            if (origin == null || end == null)
+                return;
+
             if (shouldShiftInventory) {
                 shiftInventory();
                 shouldShiftInventory = false;
