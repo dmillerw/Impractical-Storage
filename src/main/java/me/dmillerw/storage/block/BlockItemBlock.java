@@ -78,8 +78,11 @@ public class BlockItemBlock extends Block implements ITileEntityProvider {
                 TileEntity tile = worldIn.getTileEntity(pos);
                 if (tile != null) {
                     ItemStack drop = ((TileItemBlock)tile).getDrop();
-                    if (!drop.isEmpty())
+                    if (!drop.isEmpty()) {
                         InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), drop);
+                    }
+
+                    worldIn.setBlockToAir(pos);
                 }
 
                 return true;

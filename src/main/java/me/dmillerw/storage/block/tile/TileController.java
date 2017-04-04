@@ -96,7 +96,7 @@ public class TileController extends TileCore implements ITickable {
                     if (!simulate) {
                         ItemStack copy = stack.copy();
                         copy.grow(stackInSlot.getCount());
-                        controller.setInventorySlotContents(slot, copy);
+                        controller.setInventorySlotContents(slot, copy, true);
                         controller.markDirty();
                     }
 
@@ -107,7 +107,7 @@ public class TileController extends TileCore implements ITickable {
                     if (!simulate) {
                         ItemStack copy = stack.splitStack(m);
                         copy.grow(stackInSlot.getCount());
-                        controller.setInventorySlotContents(slot, copy);
+                        controller.setInventorySlotContents(slot, copy, true);
                         controller.markDirty();
                         return stack;
                     } else {
@@ -121,7 +121,7 @@ public class TileController extends TileCore implements ITickable {
                     // copy the stack to not modify the original one
                     stack = stack.copy();
                     if (!simulate) {
-                        controller.setInventorySlotContents(slot, stack.splitStack(m));
+                        controller.setInventorySlotContents(slot, stack.splitStack(m), true);
                         controller.markDirty();
                         return stack;
                     } else {
@@ -130,7 +130,7 @@ public class TileController extends TileCore implements ITickable {
                     }
                 } else {
                     if (!simulate) {
-                        controller.setInventorySlotContents(slot, stack);
+                        controller.setInventorySlotContents(slot, stack, true);
                         controller.markDirty();
                     }
                     return ItemStack.EMPTY;
@@ -162,7 +162,7 @@ public class TileController extends TileCore implements ITickable {
                 ItemStack old = controller.getStackInSlot(slot);
                 ItemStack decr = old.splitStack(m);
 
-                controller.setInventorySlotContents(slot, old);
+                controller.setInventorySlotContents(slot, old, true);
                 controller.markDirty();
 
                 return decr;
@@ -466,7 +466,7 @@ public class TileController extends TileCore implements ITickable {
                                         slot = i;
                                     }
 
-                                    setInventorySlotContents(slot, stack);
+                                    setInventorySlotContents(slot, stack, true);
                                 }
                             }
                         }
@@ -609,7 +609,7 @@ public class TileController extends TileCore implements ITickable {
 
     public void clearInventory() {
         for (int i = 0; i < inventory.size(); i++)
-            setInventorySlotContents(i, ItemStack.EMPTY);
+            setInventorySlotContents(i, ItemStack.EMPTY, true);
     }
 
     public int getSlotForPosition(BlockPos pos) {
@@ -657,7 +657,7 @@ public class TileController extends TileCore implements ITickable {
         return pos;
     }
 
-    public void setInventorySlotContents(int slot, ItemStack itemStack) {
+    public void setInventorySlotContents(int slot, ItemStack itemStack, boolean shouldUpdate) {
         if (!itemStack.isEmpty()) {
             if (!sortingType.isBaked()) {
                 sortingType.getPositionHandler().runtime(this, slot);
@@ -666,16 +666,18 @@ public class TileController extends TileCore implements ITickable {
 
         inventory.set(slot, itemStack);
 
-        if (itemStack.isEmpty()) {
-            shouldShiftInventory = true;
+        if (shouldUpdate) {
+            if (itemStack.isEmpty()) {
+                shouldShiftInventory = true;
+            }
+
+            blockQueueTickCounter = 0;
+
+            QueueElement element = new QueueElement();
+            element.slot = slot;
+            element.itemStack = itemStack;
+            blockQueue.add(element);
         }
-
-        blockQueueTickCounter = 0;
-
-        QueueElement element = new QueueElement();
-        element.slot = slot;
-        element.itemStack = itemStack;
-        blockQueue.add(element);
     }
 
     private void shiftInventory() {
