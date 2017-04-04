@@ -283,9 +283,11 @@ public class TileController extends TileCore implements ITickable {
 
                 tag.setInteger("slot", element.slot);
 
-                NBTTagCompound item = new NBTTagCompound();
-                element.itemStack.writeToNBT(item);
-                tag.setTag("item", item);
+                if (element.itemStack != null) {
+                    NBTTagCompound item = new NBTTagCompound();
+                    element.itemStack.writeToNBT(item);
+                    tag.setTag("item", item);
+                }
 
                 nbt_blockQueue.appendTag(tag);
             }
@@ -358,7 +360,9 @@ public class TileController extends TileCore implements ITickable {
                 NBTTagCompound tag = nbt_blockQueue.getCompoundTagAt(i);
                 QueueElement element = new QueueElement();
                 element.slot = tag.getInteger("slot");
-                element.itemStack = ItemStack.loadItemStackFromNBT(tag.getCompoundTag("item"));
+                if (tag.hasKey("item")) {
+                    element.itemStack = ItemStack.loadItemStackFromNBT(tag.getCompoundTag("item"));
+                }
                 blockQueue.add(element);
             }
 

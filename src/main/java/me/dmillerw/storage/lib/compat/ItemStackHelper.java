@@ -16,6 +16,8 @@ public class ItemStackHelper {
 
     public static NBTTagCompound saveAllItems(NBTTagCompound tag, ItemStack[] list, boolean p_191281_2_) {
         NBTTagList nbttaglist = new NBTTagList();
+        if (list == null)
+            return tag;
 
         for (int i = 0; i < list.length; ++i) {
             ItemStack itemstack = (ItemStack) list[i];
