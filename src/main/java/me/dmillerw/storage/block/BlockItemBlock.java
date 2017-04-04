@@ -84,6 +84,8 @@ public class BlockItemBlock extends Block implements ITileEntityProvider {
                         InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), drop);
                 }
 
+                worldIn.setBlockToAir(pos);
+
                 return true;
             } else {
                 return false;
