@@ -123,7 +123,7 @@ public class TileItemBlock extends TileCore {
                 return ItemStack.EMPTY;
 
             ItemStack drop = controller.getStackInSlot(slot).copy();
-            controller.setInventorySlotContents(slot, ItemStack.EMPTY, false);
+            controller.setInventorySlotContents(slot, ItemStack.EMPTY, false, true, false);
 
             return drop;
         } else {
