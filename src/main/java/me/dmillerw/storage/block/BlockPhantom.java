@@ -76,9 +76,9 @@ public class BlockPhantom extends Block {
 
     @Override
     public void getSubBlocks(Item itemIn, CreativeTabs tab, NonNullList<ItemStack> list) {
-        for (BlockPhantom.EnumType type : BlockPhantom.EnumType.values()) {
-            list.add(new ItemStack(itemIn, 1, type.getMetadata()));
-        }
+//        for (BlockPhantom.EnumType type : BlockPhantom.EnumType.values()) {
+//            list.add(new ItemStack(itemIn, 1, type.getMetadata()));
+//        }
     }
 
     @Override
