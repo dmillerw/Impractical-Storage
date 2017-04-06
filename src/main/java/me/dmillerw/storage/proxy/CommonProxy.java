@@ -3,6 +3,7 @@ package me.dmillerw.storage.proxy;
 import me.dmillerw.storage.block.ModBlocks;
 import me.dmillerw.storage.block.tile.TileController;
 import me.dmillerw.storage.block.tile.TileControllerInterface;
+import me.dmillerw.storage.block.tile.TileConveyor;
 import me.dmillerw.storage.block.tile.TileItemBlock;
 import me.dmillerw.storage.core.BlockOverrides;
 import me.dmillerw.storage.core.handler.GuiHandler;
@@ -54,6 +55,7 @@ public class CommonProxy implements IProxy {
         GameRegistry.registerTileEntity(TileItemBlock.class, ModInfo.ID + ":item_block");
         GameRegistry.registerTileEntity(TileController.class, ModInfo.ID + ":controller");
         GameRegistry.registerTileEntity(TileControllerInterface.class, ModInfo.ID + ":controller_interface");
+        GameRegistry.registerTileEntity(TileConveyor.class, ModInfo.ID + ":conveyor");
 
         // Controller - Crafting Recipe
         GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(ModBlocks.controller),
