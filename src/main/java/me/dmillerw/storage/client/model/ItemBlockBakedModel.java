@@ -2,6 +2,7 @@ package me.dmillerw.storage.client.model;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import me.dmillerw.storage.block.BlockItemBlock;
 import me.dmillerw.storage.block.ModBlocks;
 import me.dmillerw.storage.core.BlockOverrides;
@@ -26,6 +27,7 @@ import org.lwjgl.util.vector.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by dmillerw
@@ -41,6 +43,8 @@ public class ItemBlockBakedModel implements IBakedModel {
     private static RenderItem renderItem() {
         return Minecraft.getMinecraft().getRenderItem();
     }
+
+    private Set<String> renderBlacklist = Sets.newHashSet();
 
     private VertexFormat format;
     private TextureAtlasSprite wood;
@@ -61,7 +65,7 @@ public class ItemBlockBakedModel implements IBakedModel {
         List<BakedQuad> quads = Lists.newArrayList();
 
         Block renderBlock;
-        if (renderValue == null || renderValue.isEmpty()) {
+        if (renderValue == null || renderValue.isEmpty() || renderBlacklist.contains(renderValue)) {
             renderBlock = ModBlocks.crate;
             renderValueMeta = 0;
         } else {
@@ -116,7 +120,14 @@ public class ItemBlockBakedModel implements IBakedModel {
         IBlockState renderState = renderBlock.getStateFromMeta(renderValueMeta);
         IBakedModel model = rendererDispatcher().getModelForState(renderState);
 
-        quads.addAll(model.getQuads(renderState, side, rand));
+        try {
+            quads.addAll(model.getQuads(renderState, side, rand));
+        } catch (Exception ex) {
+            renderBlacklist.add(renderValue);
+
+            IBlockState s = ModBlocks.crate.getDefaultState();
+            return rendererDispatcher().getModelForState(s).getQuads(s, side, rand);
+        }
 
         return quads;
     }
