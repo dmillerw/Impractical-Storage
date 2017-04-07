@@ -73,6 +73,8 @@ public class GuiController extends GuiScreen {
     private boolean showBounds;
     private SortingType sortingType;
 
+    private boolean isInventoryEmpty;
+
     private GuiButtonExt buttonShowBounds;
     private GuiButtonExt buttonSortType;
 
@@ -98,6 +100,8 @@ public class GuiController extends GuiScreen {
 
         this.showBounds = tile.showBounds;
         this.sortingType = tile.sortingType;
+
+        this.isInventoryEmpty = tile.isEmpty;
     }
 
     @Override
@@ -125,6 +129,8 @@ public class GuiController extends GuiScreen {
         addButton(new GuiButtonArrow(BUTTON_OFFSET_Y_DOWN, guiLeft + 43, guiTop + 131, 31, 15, GuiButtonArrow.ARROW_DOWN));
         addButton(new GuiButtonArrow(BUTTON_OFFSET_Z_UP, guiLeft + 78, guiTop + 92, 31, 15, GuiButtonArrow.ARROW_UP));
         addButton(new GuiButtonArrow(BUTTON_OFFSET_Z_DOWN, guiLeft + 78, guiTop + 131, 31, 15, GuiButtonArrow.ARROW_DOWN));
+
+        buttonList.stream().filter((b) -> b instanceof GuiButtonArrow).forEach((b) -> b.enabled = this.isInventoryEmpty);
 
         boundX = new GuiTextField(0, fontRendererObj, guiLeft + 9, guiTop + 40, 29, 15);
         boundX.setText(Integer.toString(x));

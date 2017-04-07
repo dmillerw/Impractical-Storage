@@ -108,11 +108,17 @@ public class SControllerConfig implements IMessage {
         @Override
         public IMessage onMessage(SControllerConfig message, MessageContext ctx) {
             Minecraft.getMinecraft().addScheduledTask(() -> {
-                World world = ctx.getServerHandler().playerEntity.getEntityWorld();
+                World world = ctx.getServerHandler().playerEntity.worldObj;
                 IBlockState state = world.getBlockState(message.destination);
                 TileEntity tile = world.getTileEntity(message.destination);
                 if (tile != null && tile instanceof TileController) {
                     TileController controller = (TileController) tile;
+
+                    if (message.sort)
+                        controller.setSortingType(message.sortingType);
+
+                    if (!controller.isInventoryEmpty())
+                        return;
 
                     if (message.dimensions) {
                         controller.updateRawBounds(
@@ -127,9 +133,6 @@ public class SControllerConfig implements IMessage {
                                 message.offsetX,
                                 message.offsetY,
                                 message.offsetZ);
-
-                    if (message.sort)
-                        controller.setSortingType(message.sortingType);
 
                     controller.markDirtyAndNotify();
                 }
