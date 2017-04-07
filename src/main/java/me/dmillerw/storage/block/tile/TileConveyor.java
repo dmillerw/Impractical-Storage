@@ -112,6 +112,8 @@ public class TileConveyor extends TileCore implements ITickable {
     public void readFromDisk(NBTTagCompound compound) {
         if (compound.hasKey("stateId") && compound.hasKey("stateMeta")) {
             this.conveyorState = Block.getBlockById(compound.getInteger("stateId")).getStateFromMeta(compound.getInteger("stateMeta"));
+        } else {
+            this.conveyorState = null;
         }
 
         previousProgress = compound.getFloat("previousProgress");
