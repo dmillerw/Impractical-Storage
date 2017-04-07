@@ -21,6 +21,8 @@ public class ClientRegistryHandler {
         registerItemModel(ModBlocks.controller_item);
         registerItemModel(ModBlocks.controller_interface_item);
         registerItemModel(ModBlocks.phantom_item);
+        registerItemModel(ModBlocks.conveyor_item);
+        registerItemModel(ModBlocks.gravity_inducer_item);
 
         for (BlockCrate.EnumType type : BlockCrate.EnumType.values()) {
             registerItemModel(ModBlocks.crate_item, "variant", type);

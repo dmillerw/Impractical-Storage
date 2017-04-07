@@ -1,7 +1,6 @@
 package me.dmillerw.storage.client.render.tile;
 
 import me.dmillerw.storage.block.tile.TileConveyor;
-import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
@@ -27,36 +26,34 @@ public class RenderTileConveyor extends TileEntitySpecialRenderer<TileConveyor> 
         if (iblockstate == null)
             return;
 
-        if (iblockstate.getMaterial() != Material.AIR && te.getProgress() <= 1.0F) {
-            Tessellator tessellator = Tessellator.getInstance();
-            VertexBuffer vertexbuffer = tessellator.getBuffer();
+        Tessellator tessellator = Tessellator.getInstance();
+        VertexBuffer vertexbuffer = tessellator.getBuffer();
 
-            this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+        this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
-            RenderHelper.disableStandardItemLighting();
+        RenderHelper.disableStandardItemLighting();
 
-            GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-            GlStateManager.enableBlend();
-            GlStateManager.disableCull();
+        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        GlStateManager.enableBlend();
+        GlStateManager.disableCull();
 
-            if (Minecraft.isAmbientOcclusionEnabled()) {
-                GlStateManager.shadeModel(7425);
-            } else {
-                GlStateManager.shadeModel(7424);
-            }
-
-            vertexbuffer.begin(7, DefaultVertexFormats.BLOCK);
-            vertexbuffer.setTranslation(x - (double) blockpos.getX() + te.getOffsetX(partialTicks), y - (double) blockpos.getY() + te.getOffsetY(partialTicks), z - (double) blockpos.getZ() + te.getOffsetZ(partialTicks));
-
-            World world = this.getWorld();
-
-            this.renderStateModel(blockpos.up(), iblockstate, vertexbuffer, world, false);
-
-            vertexbuffer.setTranslation(0, 0, 0);
-
-            tessellator.draw();
-            RenderHelper.enableStandardItemLighting();
+        if (Minecraft.isAmbientOcclusionEnabled()) {
+            GlStateManager.shadeModel(7425);
+        } else {
+            GlStateManager.shadeModel(7424);
         }
+
+        vertexbuffer.begin(7, DefaultVertexFormats.BLOCK);
+        vertexbuffer.setTranslation(x - (double) blockpos.getX() + te.getOffsetX(partialTicks), y - (double) blockpos.getY() + te.getOffsetY(partialTicks), z - (double) blockpos.getZ() + te.getOffsetZ(partialTicks));
+
+        World world = this.getWorld();
+
+        this.renderStateModel(blockpos.up(), iblockstate, vertexbuffer, world, false);
+
+        vertexbuffer.setTranslation(0, 0, 0);
+
+        tessellator.draw();
+        RenderHelper.enableStandardItemLighting();
     }
 
     private boolean renderStateModel(BlockPos pos, IBlockState state, VertexBuffer buffer, World p_188186_4_, boolean checkSides) {

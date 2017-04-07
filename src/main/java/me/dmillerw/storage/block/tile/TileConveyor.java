@@ -3,175 +3,118 @@ package me.dmillerw.storage.block.tile;
 import me.dmillerw.storage.block.BlockConveyor;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-
-import java.util.List;
 
 /**
  * Created by Dylan Miller on 1/20/14
  */
 public class TileConveyor extends TileCore implements ITickable {
 
-    public float progressStep = 0.0F;
     public float progress = 0.0F;
+    public float previousProgress = 0.0F;
 
-    public ItemStack stored = ItemStack.EMPTY;
-
-    public boolean redstoneState = false;
-    private boolean clearNextTick = false;
+    public IBlockState conveyorState = null;
 
     private EnumFacing getFacing() {
-        return world.getBlockState(pos).getValue(BlockConveyor.FACING);
-    }
-
-    @SideOnly(Side.CLIENT)
-    public float getProgress(float ticks) {
-        if (ticks > 1.0F) {
-            ticks = 1.0F;
-        }
-
-        return this.progressStep + (this.progress - this.progressStep) * ticks;
+        return world.getBlockState(pos).getValue(BlockConveyor.FACING).getOpposite();
     }
 
     @SideOnly(Side.CLIENT)
     public float getOffsetX(float ticks) {
-        return (float) this.getFacing().getFrontOffsetX() * (-progress + ticks);
+        return (float) this.getFacing().getOpposite().getFrontOffsetX() * getProgress(ticks);
     }
 
     @SideOnly(Side.CLIENT)
     public float getOffsetY(float ticks) {
-        return (float) this.getFacing().getFrontOffsetY() * (-progress + ticks);
+        return (float) this.getFacing().getOpposite().getFrontOffsetY() * getProgress(ticks);
     }
 
     @SideOnly(Side.CLIENT)
     public float getOffsetZ(float ticks) {
-        return (float) this.getFacing().getFrontOffsetZ() * (-progress + ticks);
+        return (float) this.getFacing().getOpposite().getFrontOffsetZ() * getProgress(ticks);
     }
 
-    private float getExtendedProgress(float progress) {
-        return progress - 1.0F;
+    private float getProgress(float ticks) {
+        return -(previousProgress + (progress - previousProgress) * ticks);
     }
 
     @Override
     public void update() {
-        if (clearNextTick) {
-            stored = ItemStack.EMPTY;
-            progress = 0;
+        final float STEP = 0.1F;
 
-            markDirtyAndNotify();
+        this.previousProgress = this.progress;
+        if (this.progress >= 1.0F) {
+            BlockPos inFront = pos.offset(getFacing());
+            if (world.isAirBlock(inFront.up())) {
+                world.setBlockState(inFront.up(), getBlockState());
 
-            clearNextTick = false;
+                this.conveyorState = null;
+                this.previousProgress = 0F;
+                this.progress = 0F;
 
-            return;
-        }
-
-        if (!stored.isEmpty()) {
-            if (progressStep < 0.1F && !redstoneState) {
-                progressStep += 0.01F;
+                this.markDirtyAndNotify();
             }
+        } else {
+            if (conveyorState != null) {
+                this.progress += STEP;
+            } else {
+                // Check to see if there's a valid block above
+                if (!world.isAirBlock(pos.up())) {
+                    // If so, check to see if we would be placing it on a conveyor, or if there's room
+                    BlockPos inFront = pos.offset(getFacing());
 
-            if (progressStep > 0F && redstoneState) {
-                progressStep -= 0.01F;
-            }
+                    if (world.isAirBlock(inFront.up())) {
+                        TileEntity tile = world.getTileEntity(inFront);
 
-            if (progress < 1.0F) {
-                progress += progressStep;
-            } else if (progress > 1.0F) {
-                progress = 1.0F;
-            }
-        }
+                        if (tile instanceof TileConveyor) {
+                            // and the conveyor isn't currently working on anything, we can begin
+                            if (((TileConveyor) tile).conveyorState == null) {
+                                this.conveyorState = world.getBlockState(pos.up());
+                            }
+                        } else {
+                            this.conveyorState = world.getBlockState(pos.up());
+                        }
 
-        if (!world.isRemote) {
-            if (redstoneState) {
-                return;
-            }
-
-            int mX = pos.getX() + getFacing().getOpposite().getDirectionVec().getX();
-            int mY = pos.getY() + 1;
-            int mZ = pos.getZ() + getFacing().getOpposite().getDirectionVec().getZ();
-
-            BlockPos mPos = new BlockPos(mX, mY, mZ);
-
-            if (!world.isAirBlock(mPos)) {
-                return;
-            }
-
-            List<EntityLivingBase> intersectingEntities = world.getEntitiesWithinAABB(EntityLivingBase.class, new AxisAlignedBB(mPos, mPos.up()));
-            if (intersectingEntities != null && intersectingEntities.size() > 0) {
-                return;
-            }
-
-            TileEntity potentialConveyor = world.getTileEntity(new BlockPos(mX, pos.getY(), mZ));
-            if (potentialConveyor != null && potentialConveyor instanceof TileConveyor) {
-                TileConveyor tile = (TileConveyor) potentialConveyor;
-                if (!tile.stored.isEmpty()) {
-                    return;
-                } else {
-                    if (progress >= 0.99F && !stored.isEmpty()) {
-                        tile.stored = this.stored;
-                        tile.progress = 0F;
-
-                        tile.markDirtyAndNotify();
-
-                        clearNextTick = true;
-
-                        return;
+                        if (this.conveyorState != null) {
+                            world.setBlockToAir(pos.up());
+                            markDirtyAndNotify();
+                        }
                     }
+                } else {
+                    this.previousProgress = 0F;
+                    this.progress = 0F;
                 }
-            }
-
-            if (stored.isEmpty()) {
-                BlockPos pos = new BlockPos(this.pos);
-                IBlockState state = world.getBlockState(pos.up());
-
-                if (!world.isAirBlock(pos.up()) && !state.getBlock().hasTileEntity(state)) {
-                    stored = new ItemStack(state.getBlock(), 1, state.getBlock().getMetaFromState(state));
-                    world.setBlockToAir(pos.up());
-
-                    markDirtyAndNotify();
-                }
-            } else if (progress >= 1.0F && !stored.isEmpty()) {
-                world.setBlockState(mPos, getBlockState());
-
-                clearNextTick = true;
             }
         }
-    }
-
-    public float getProgress() {
-        return progress;
     }
 
     public IBlockState getBlockState() {
-        if (stored.isEmpty())
-            return null;
-
-        Block block = Block.getBlockFromItem(stored.getItem());
-        return block.getStateFromMeta(stored.getMetadata());
+        return conveyorState;
     }
 
     @Override
     public void writeToDisk(NBTTagCompound compound) {
-        compound.setFloat("progress", progress);
+        if (conveyorState != null) {
+            compound.setInteger("stateId", Block.getIdFromBlock(conveyorState.getBlock()));
+            compound.setInteger("stateMeta", conveyorState.getBlock().getMetaFromState(conveyorState));
+        }
 
-        NBTTagCompound tag = new NBTTagCompound();
-        stored.writeToNBT(tag);
-        compound.setTag("item", tag);
+        compound.setFloat("previousProgress", previousProgress);
     }
 
     @Override
     public void readFromDisk(NBTTagCompound compound) {
-        progress = compound.getFloat("progress");
-        progressStep = progress;
-        stored = new ItemStack(compound.getCompoundTag("item"));
+        if (compound.hasKey("stateId") && compound.hasKey("stateMeta")) {
+            this.conveyorState = Block.getBlockById(compound.getInteger("stateId")).getStateFromMeta(compound.getInteger("stateMeta"));
+        }
+
+        previousProgress = compound.getFloat("previousProgress");
+        progress = previousProgress;
     }
 }

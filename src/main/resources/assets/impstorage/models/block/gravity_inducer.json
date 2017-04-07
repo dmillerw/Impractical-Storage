@@ -1,0 +1,8 @@
+{
+  "parent": "block/orientable",
+  "textures": {
+    "top": "impstorage:blocks/side_generic",
+    "front": "impstorage:blocks/gravity_inducer_front",
+    "side": "impstorage:blocks/side_generic"
+  }
+}

@@ -1,5 +1,7 @@
 tile.impstorage:controller.name=Storage Controller
 tile.impstorage:controller_interface.name=Controller Interface
+tile.impstorage:gravity_inducer.name=Gravity Inducer
+tile.impstorage:conveyor.name=Blockvayor
 
 tile.impstorage:crate.wood.name=Wooden Crate
 tile.impstorage:crate.iron.name=Iron Crate
