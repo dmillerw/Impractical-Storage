@@ -56,6 +56,22 @@ public class ItemBlockBakedModel implements IBakedModel {
 
     @Override
     public List<BakedQuad> getQuads(@Nullable IBlockState state, @Nullable EnumFacing side, long rand) {
+        List<BakedQuad> quads = Lists.newArrayList();
+
+        try {
+            quads = safeGetQuads(state, side, rand);
+        } catch (Exception ex) {
+            IExtendedBlockState extendedBlockState = (IExtendedBlockState) state;
+            renderBlacklist.add(extendedBlockState.getValue(BlockItemBlock.RENDER_VALUE));
+
+            IBlockState s = ModBlocks.crate.getDefaultState();
+            quads = rendererDispatcher().getModelForState(s).getQuads(s, side, rand);
+        }
+
+        return quads;
+    }
+
+    private List<BakedQuad> safeGetQuads(@Nullable IBlockState state, @Nullable EnumFacing side, long rand) {
         IExtendedBlockState extendedBlockState = (IExtendedBlockState) state;
 
         boolean isBlock = extendedBlockState.getValue(BlockItemBlock.IS_BLOCK);
@@ -81,7 +97,11 @@ public class ItemBlockBakedModel implements IBakedModel {
                     renderValueMeta = 0;
 
                     IBakedModel model = renderItem().getItemModelMesher().getItemModel(itemStack);
-                    BlockPartFace blockPartFace = new BlockPartFace(side, 0, model.getParticleTexture().toString(), new BlockFaceUV(new float[]{0, 0, 16, 16}, 0));
+                    TextureAtlasSprite texture = model.getParticleTexture();
+                    if (texture == null)
+                        texture = rendererDispatcher().getBlockModelShapes().getModelManager().getMissingModel().getParticleTexture();
+
+                    BlockPartFace blockPartFace = new BlockPartFace(side, 0, texture.toString(), new BlockFaceUV(new float[]{0, 0, 16, 16}, 0));
                     BlockPartRotation blockPartRotation = new BlockPartRotation(new Vector3f(0, 0, 0), EnumFacing.Axis.X, 0, false);
 
                     final float shrink = 2.5F;
@@ -120,14 +140,7 @@ public class ItemBlockBakedModel implements IBakedModel {
         IBlockState renderState = renderBlock.getStateFromMeta(renderValueMeta);
         IBakedModel model = rendererDispatcher().getModelForState(renderState);
 
-        try {
-            quads.addAll(model.getQuads(renderState, side, rand));
-        } catch (Exception ex) {
-            renderBlacklist.add(renderValue);
-
-            IBlockState s = ModBlocks.crate.getDefaultState();
-            return rendererDispatcher().getModelForState(s).getQuads(s, side, rand);
-        }
+        quads.addAll(model.getQuads(renderState, side, rand));
 
         return quads;
     }
