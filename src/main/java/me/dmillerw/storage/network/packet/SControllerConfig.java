@@ -114,6 +114,12 @@ public class SControllerConfig implements IMessage {
                 if (tile != null && tile instanceof TileController) {
                     TileController controller = (TileController) tile;
 
+                    if (message.sort)
+                        controller.setSortingType(message.sortingType);
+
+                    if (!controller.isInventoryEmpty())
+                        return;
+
                     if (message.dimensions) {
                         controller.updateRawBounds(
                                 state.getValue(BlockController.FACING),
@@ -127,9 +133,6 @@ public class SControllerConfig implements IMessage {
                                 message.offsetX,
                                 message.offsetY,
                                 message.offsetZ);
-
-                    if (message.sort)
-                        controller.setSortingType(message.sortingType);
 
                     controller.markDirtyAndNotify();
                 }

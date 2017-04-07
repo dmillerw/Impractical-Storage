@@ -58,6 +58,8 @@ public class TileController extends TileCore implements ITickable {
         return itemStack.getItem() instanceof ItemBlock ? MAX_BLOCK_STACK_SIZE : MAX_ITEM_STACK_SIZE;
     }
 
+    public static boolean INVENTORY_BLOCK = false;
+
     public static class ItemHandler implements IItemHandler {
 
         private TileController controller;
@@ -80,6 +82,9 @@ public class TileController extends TileCore implements ITickable {
         @Nonnull
         @Override
         public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
+            if (INVENTORY_BLOCK)
+                return ItemStack.EMPTY;
+
             if (stack.isEmpty())
                 return ItemStack.EMPTY;
 
@@ -141,6 +146,9 @@ public class TileController extends TileCore implements ITickable {
         @Nonnull
         @Override
         public ItemStack extractItem(int slot, int amount, boolean simulate) {
+            if (INVENTORY_BLOCK)
+                return ItemStack.EMPTY;
+
             if (amount == 0)
                 return ItemStack.EMPTY;
 
@@ -200,6 +208,8 @@ public class TileController extends TileCore implements ITickable {
     public int zLength = 1;
     public int totalSize;
 
+    public boolean isEmpty;
+
     public SortingType sortingType = SortingType.ROWS;
 
     private int scanCounter = 0;
@@ -232,6 +242,8 @@ public class TileController extends TileCore implements ITickable {
             compound.setInteger("height", height);
             compound.setInteger("xLength", xLength);
             compound.setInteger("zLength", zLength);
+
+            compound.setBoolean("isEmpty", isInventoryEmpty());
 
             compound.setInteger("sortingType", sortingType.ordinal());
 
@@ -321,6 +333,8 @@ public class TileController extends TileCore implements ITickable {
             zLength = compound.getInteger("zLength");
             totalSize = height * xLength * zLength;
 
+            isEmpty = compound.getBoolean("isEmpty");
+
             sortingType = SortingType.VALUES[compound.getInteger("sortingType")];
 
             shouldShiftInventory = compound.getBoolean("shouldShiftInventory");
@@ -409,12 +423,16 @@ public class TileController extends TileCore implements ITickable {
                 if (CommonProxy.blockUpdateBatch == -1) {
                     for (int i = 0; i < blockQueue.size(); i++) {
                         QueueElement element = blockQueue.pop();
-                        setBlock(element.slot, element.itemStack);
+                        if (!setBlock(element.slot, element.itemStack)) {
+                            InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), element.itemStack.copy());
+                        }
                     }
                 } else {
                     for (int i = 0; i < Math.min(blockQueue.size(), CommonProxy.blockUpdateBatch); i++) {
                         QueueElement element = blockQueue.pop();
-                        setBlock(element.slot, element.itemStack);
+                        if (!setBlock(element.slot, element.itemStack)) {
+                            InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), element.itemStack.copy());
+                        }
                     }
                 }
 
@@ -531,6 +549,8 @@ public class TileController extends TileCore implements ITickable {
     }
 
     public void setBounds(BlockPos nOrigin, BlockPos nEnd) {
+        INVENTORY_BLOCK = true;
+
         boolean clear = this.origin != null && this.end != null;
         BlockPos oldOrigin = this.origin;
 
@@ -618,6 +638,14 @@ public class TileController extends TileCore implements ITickable {
                 }
             }
         }
+
+        INVENTORY_BLOCK = false;
+    }
+
+    public boolean isInventoryEmpty() {
+        boolean empty = true;
+        for (ItemStack stack : inventory) if (!stack.isEmpty()) empty = false;
+        return empty;
     }
 
     public void onBlockBreak() {
@@ -731,7 +759,10 @@ public class TileController extends TileCore implements ITickable {
         }
     }
 
-    private void setBlock(int slot, ItemStack itemStack) {
+    private boolean setBlock(int slot, ItemStack itemStack) {
+        if (slot >= slotToWorldMap.length)
+            return false;
+
         BlockPos pos = BlockPos.fromLong(slotToWorldMap[slot]);
 
         int x = pos.getX();
@@ -765,6 +796,8 @@ public class TileController extends TileCore implements ITickable {
                 }
             }
         }
+
+        return true;
     }
 
     public int getRedstoneLevel() {
@@ -786,13 +819,13 @@ public class TileController extends TileCore implements ITickable {
 
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
-        return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && isReady();
+        return !INVENTORY_BLOCK && capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY && isReady();
     }
 
     @Nullable
     @Override
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
-        if (isReady())
+        if (!INVENTORY_BLOCK && isReady())
             if (capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) return (T) itemHandler;
         return super.getCapability(capability, facing);
     }
