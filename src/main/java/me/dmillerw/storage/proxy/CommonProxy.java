@@ -59,12 +59,12 @@ public class CommonProxy implements IProxy {
 
         // Controller - Crafting Recipe
         GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(ModBlocks.controller),
-                "IRI",
-                "ICI",
-                "III",
+                " I ",
+                " C ",
+                " D ",
                 'I', "ingotIron",
-                'R', Items.REDSTONE,
-                'C', "chest"));
+                'C', "chest",
+                'D', Blocks.DISPENSER));
 
         // Controller Interface - Crafting Recipe
         GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(ModBlocks.controller_interface),
@@ -73,6 +73,26 @@ public class CommonProxy implements IProxy {
                 'I', "ingotIron",
                 'R', Items.REDSTONE,
                 'H', Blocks.HOPPER));
+
+        // Conveyor - Crafting Recipe
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(ModBlocks.conveyor),
+                " D ",
+                "IRI",
+                'D', "dyeBlack",
+                'I', "ingotIron",
+                'R', Items.REDSTONE));
+
+        // Gravity Inducer - Crafting Recipe
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(ModBlocks.gravity_inducer),
+                "DL",
+                'D', Blocks.DISPENSER,
+                'L', new ItemStack(Items.DYE, 1, 4)));
+
+        // Itemizer - Crafting Recipe
+        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(ModBlocks.itemizer),
+                "DR",
+                'D', Blocks.DISPENSER,
+                'R', Items.REDSTONE));
     }
 
     @Override
