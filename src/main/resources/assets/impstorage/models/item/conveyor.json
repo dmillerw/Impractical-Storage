@@ -2,10 +2,10 @@
   "parent": "block/orientable",
   "textures": {
     "top": "impstorage:blocks/conveyor_top",
-    "front": "impstorage:blocks/side_generic",
-    "side": "impstorage:blocks/side_generic"
+    "front": "impstorage:blocks/conveyor_top",
+    "side": "impstorage:blocks/conveyor_side"
   },
-"display": {
+  "display": {
     "thirdperson": {
       "rotation": [
         10,

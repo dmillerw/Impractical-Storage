@@ -1,8 +1,21 @@
 {
-  "parent": "block/orientable",
+  "parent": "block/block",
   "textures": {
     "top": "impstorage:blocks/conveyor_top",
-    "front": "impstorage:blocks/side_generic",
-    "side": "impstorage:blocks/side_generic"
-  }
+    "side": "impstorage:blocks/conveyor_side"
+  },
+  "elements": [
+    {
+      "from": [ 0, 0, 0 ],
+      "to": [ 16, 16, 16 ],
+      "faces": {
+        "down":  { "texture": "#top", "cullface": "down", "rotation":  180 },
+        "up":    { "texture": "#top", "cullface": "up" },
+        "north": { "texture": "#top", "cullface": "north" },
+        "south": { "texture": "#top", "cullface": "south" },
+        "west":  { "texture": "#side", "cullface": "west", "rotation":  270 },
+        "east":  { "texture": "#side", "cullface": "east", "rotation":  90 }
+      }
+    }
+  ]
 }
