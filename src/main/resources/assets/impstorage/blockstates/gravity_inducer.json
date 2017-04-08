@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "impstorage:gravity_inducer" },
+    "facing=south": { "model": "impstorage:gravity_inducer", "y": 180 },
+    "facing=west":  { "model": "impstorage:gravity_inducer", "y": 270 },
+    "facing=east":  { "model": "impstorage:gravity_inducer", "y": 90 }
+  }
+}
