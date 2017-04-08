@@ -1,40 +1,32 @@
 package me.dmillerw.storage.block.tile;
 
 import me.dmillerw.storage.block.BlockItemBlock;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.property.IExtendedBlockState;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 /**
  * @author dmillerw
  */
 public class TileItemBlock extends TileCore {
 
-    public static  boolean DROPS = true;
+    public static boolean DROPS = true;
 
-    public ItemStack tileRenderItem;
-
-    public boolean isBlock;
-    public String itemBlock;
-    public int itemBlockMeta;
-
+    public ItemStack item = ItemStack.EMPTY;
     private BlockPos controllerPos;
 
     @Override
     public void writeToDisk(NBTTagCompound compound) {
         super.writeToDisk(compound);
 
-        if (controllerPos != null) compound.setLong("controller", controllerPos.toLong());
+        if (controllerPos != null)
+            compound.setLong("controller", controllerPos.toLong());
 
-        compound.setBoolean("isBlock", isBlock);
-        if (itemBlock != null) compound.setString("itemBlock", itemBlock);
-        compound.setInteger("itemBlockMeta", itemBlockMeta);
+        NBTTagCompound tag = new NBTTagCompound();
+        item.writeToNBT(tag);
+        compound.setTag("item", tag);
     }
 
     @Override
@@ -47,11 +39,11 @@ public class TileItemBlock extends TileCore {
             controllerPos = null;
         }
 
-        isBlock = compound.getBoolean("isBlock");
-        itemBlock = compound.getString("itemBlock");
-        itemBlockMeta = compound.getInteger("itemBlockMeta");
-
-        tileRenderItem = null;
+        if (compound.hasKey("item")) {
+            item = new ItemStack(compound.getCompoundTag("item"));
+        } else {
+            item = ItemStack.EMPTY;
+        }
     }
 
     public void setController(TileController controller) {
@@ -68,49 +60,12 @@ public class TileItemBlock extends TileCore {
     public void updateItemBlock(ItemStack force) {
         TileController controller = getController();
         if (controller != null) {
-            ItemStack stack = force.isEmpty() ? controller.getStackForPosition(pos) : force;
-
-            if (!stack.isEmpty()) {
-                if (stack.getItem() instanceof ItemBlock) {
-                    Block block = Block.getBlockFromItem(stack.getItem());
-
-                    boolean n_isBlock = true;
-                    String n_itemBlock = ForgeRegistries.BLOCKS.getKey(block).toString();
-                    int n_itemBlockMeta = stack.getMetadata();
-
-                    if (n_isBlock != isBlock || !(n_itemBlock.equals(itemBlock)) || n_itemBlockMeta != itemBlockMeta) {
-                        isBlock = n_isBlock;
-                        itemBlock = n_itemBlock;
-                        itemBlockMeta = n_itemBlockMeta;
-
-                        markDirtyAndNotify();
-                    }
-
-                    return;
-                } else {
-                    Item item = stack.getItem();
-
-                    boolean n_isBlock = false;
-                    String n_itemBlock = ForgeRegistries.ITEMS.getKey(item).toString();
-                    int n_itemBlockMeta = stack.getMetadata();
-
-                    if (n_isBlock != isBlock || !(n_itemBlock.equals(itemBlock)) || n_itemBlockMeta != itemBlockMeta) {
-                        isBlock = n_isBlock;
-                        itemBlock = n_itemBlock;
-                        itemBlockMeta = n_itemBlockMeta;
-
-                        markDirtyAndNotify();
-                    }
-
-                    return;
-                }
-            }
+            this.item = force.isEmpty() ? controller.getStackForPosition(pos) : force;
+            this.markDirtyAndNotify();
+        } else {
+            this.item = ItemStack.EMPTY;
+            this.markDirtyAndNotify();
         }
-
-        itemBlock = null;
-        itemBlockMeta = 0;
-
-        markDirtyAndNotify();
     }
 
     public ItemStack getDrop() {
@@ -132,9 +87,6 @@ public class TileItemBlock extends TileCore {
     }
 
     public IExtendedBlockState getExtendedBlockState(IBlockState state) {
-        return ((IExtendedBlockState)state)
-                .withProperty(BlockItemBlock.IS_BLOCK, isBlock)
-                .withProperty(BlockItemBlock.RENDER_VALUE, itemBlock)
-                .withProperty(BlockItemBlock.RENDER_VALUE_META, itemBlockMeta);
+        return ((IExtendedBlockState) state).withProperty(BlockItemBlock.ITEM, item);
     }
 }
