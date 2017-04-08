@@ -59,7 +59,7 @@ public class BlockItemizer extends Block {
             pos = pos.offset(state.getValue(FACING));
             IBlockState s = world.getBlockState(pos);
             if (!world.isAirBlock(pos)) {
-                ItemStack stack = new ItemStack(s.getBlock(), 1, s.getBlock().damageDropped(state));
+                ItemStack stack = new ItemStack(s.getBlock(), 1, s.getBlock().damageDropped(s));
 
                 EntityItem entity = new EntityItem(world, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, stack);
                 entity.motionX = entity.motionY = entity.motionZ = 0;
