@@ -1,0 +1,27 @@
+{
+  "parent": "block/orientable",
+  "textures": {
+    "top": "impstorage:blocks/side_generic",
+    "front": "impstorage:blocks/itemizer_front",
+    "side": "impstorage:blocks/side_generic"
+  },
+"display": {
+    "thirdperson": {
+      "rotation": [
+        10,
+        -45,
+        170
+      ],
+      "translation": [
+        0,
+        1.5,
+        -2.75
+      ],
+      "scale": [
+        0.375,
+        0.375,
+        0.375
+      ]
+    }
+  }
+}

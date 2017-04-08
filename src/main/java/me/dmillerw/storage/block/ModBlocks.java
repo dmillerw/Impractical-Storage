@@ -45,6 +45,10 @@ public class ModBlocks {
     @GameRegistry.ObjectHolder(ModInfo.ID + ":gravity_inducer")
     public static final ItemBlock gravity_inducer_item = null;
 
+    public static final BlockItemizer itemizer = null;
+    @GameRegistry.ObjectHolder(ModInfo.ID + ":itemizer")
+    public static final ItemBlock itemizer_item = null;
+
     @Mod.EventBusSubscriber
     public static class RegistrationHandler {
 
@@ -57,7 +61,8 @@ public class ModBlocks {
                     new BlockCrate().setRegistryName(ModInfo.ID, "crate"),
                     new BlockPhantom().setRegistryName(ModInfo.ID, "phantom"),
                     new BlockConveyor().setRegistryName(ModInfo.ID, "conveyor"),
-                    new BlockGravityInducer().setRegistryName(ModInfo.ID, "gravity_inducer")
+                    new BlockGravityInducer().setRegistryName(ModInfo.ID, "gravity_inducer"),
+                    new BlockItemizer().setRegistryName(ModInfo.ID, "itemizer")
             );
         }
 
@@ -70,7 +75,8 @@ public class ModBlocks {
                     new ItemBlockCrate(crate).setRegistryName(ModInfo.ID, "crate"),
                     new ItemBlockPhantom(phantom).setRegistryName(ModInfo.ID, "phantom"),
                     new ItemBlock(conveyor).setRegistryName(ModInfo.ID, "conveyor"),
-                    new ItemBlock(gravity_inducer).setRegistryName(ModInfo.ID, "gravity_inducer")
+                    new ItemBlock(gravity_inducer).setRegistryName(ModInfo.ID, "gravity_inducer"),
+                    new ItemBlock(itemizer).setRegistryName(ModInfo.ID, "itemizer")
             );
         }
     }
