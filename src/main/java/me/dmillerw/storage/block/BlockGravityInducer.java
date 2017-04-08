@@ -3,7 +3,7 @@ package me.dmillerw.storage.block;
 import me.dmillerw.storage.lib.ModInfo;
 import me.dmillerw.storage.lib.ModTab;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockHorizontal;
+import net.minecraft.block.BlockDirectional;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
@@ -23,7 +23,7 @@ import net.minecraft.world.World;
  */
 public class BlockGravityInducer extends Block {
 
-    public static final PropertyDirection FACING = BlockHorizontal.FACING;
+    public static final PropertyDirection FACING = BlockDirectional.FACING;
 
     public BlockGravityInducer() {
         super(Material.IRON);
@@ -40,8 +40,7 @@ public class BlockGravityInducer extends Block {
 
     @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-        EnumFacing facing = placer.getHorizontalFacing();
-        worldIn.setBlockState(pos, state.withProperty(FACING, facing), 2);
+        worldIn.setBlockState(pos, state.withProperty(FACING, EnumFacing.getDirectionFromEntityLiving(pos, placer)), 2);
     }
 
     @Override
