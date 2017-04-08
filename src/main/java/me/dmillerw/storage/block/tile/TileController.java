@@ -747,7 +747,7 @@ public class TileController extends TileCore implements ITickable {
         for (int i = 0; i < inventory.size(); i++) {
             ItemStack stack = inventory.get(i);
             if (!stack.isEmpty()) {
-                shifted.set(target, stack);
+                shifted.set(target, stack.copy());
                 target++;
             }
         }
@@ -760,6 +760,8 @@ public class TileController extends TileCore implements ITickable {
     }
 
     private boolean setBlock(int slot, ItemStack itemStack) {
+        TileItemBlock.DROPS = false;
+
         if (slot >= slotToWorldMap.length)
             return false;
 
@@ -796,6 +798,8 @@ public class TileController extends TileCore implements ITickable {
                 }
             }
         }
+
+        TileItemBlock.DROPS = true;
 
         return true;
     }
