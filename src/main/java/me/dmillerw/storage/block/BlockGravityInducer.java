@@ -45,7 +45,16 @@ public class BlockGravityInducer extends Block {
     }
 
     @Override
+    public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
+        dropBlocks(worldIn, pos, state);
+    }
+
+    @Override
     public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn) {
+        dropBlocks(worldIn, pos, state);
+    }
+
+    private void dropBlocks(World worldIn, BlockPos pos, IBlockState state) {
         if (!worldIn.isRemote) {
             pos = pos.offset(state.getValue(FACING));
             if (worldIn.isAirBlock(pos.down())) {
