@@ -14,7 +14,7 @@ import java.io.File;
 /**
  * @author dmillerw
  */
-@Mod(modid = ModInfo.ID, name = ModInfo.NAME, version = ModInfo.VERSION)
+@Mod(modid = ModInfo.ID, name = ModInfo.NAME, version = ModInfo.VERSION, updateJSON = "%VERSION_JSON%")
 public class ImpracticalStorage {
 
     @Mod.Instance(ModInfo.ID)
