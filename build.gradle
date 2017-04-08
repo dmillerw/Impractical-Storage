@@ -33,9 +33,11 @@ minecraft {
     mappings = config.mcp_mappings
     useDepAts = true
 
-    replaceIn config.mod_info_path
     replace "%MOD_VERSION%", config.mod_version
     replace "%FORGE_VERSION%", config.forge_version
+    replace "%VERSION_JSON%", "https://raw.githubusercontent.com/dmillerw/Impractical-Storage/" + config.version_json
+
+    replaceIn config.mod_info_path
 }
 
 version = "${config.mod_version}-MC${config.minecraft_version}"
