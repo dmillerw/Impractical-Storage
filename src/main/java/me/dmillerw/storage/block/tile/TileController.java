@@ -468,7 +468,7 @@ public class TileController extends TileCore implements ITickable {
                                 Block block = state.getBlock();
 
                                 if (block != ModBlocks.controller && block != ModBlocks.item_block && !world.isAirBlock(pos)) {
-                                    ItemStack stack = new ItemStack(block, 1, block.getMetaFromState(state));
+                                    ItemStack stack = new ItemStack(block, 1, block.damageDropped(state));
                                     world.setBlockToAir(pos);
 
                                     int slot = getSlotForPosition(pos);
