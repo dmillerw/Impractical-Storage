@@ -78,7 +78,7 @@ public class ItemBlockBakedModel implements IBakedModel {
         List<BakedQuad> quads = Lists.newArrayList();
 
         Block renderBlock;
-        int renderMeta = 0;
+        int renderMeta = itemStack.getMetadata();
         if (itemStack.isEmpty() || renderBlacklist.contains(itemStack.getItem().getRegistryName().toString())) {
             renderBlock = ModBlocks.crate;
             renderMeta = 0;
