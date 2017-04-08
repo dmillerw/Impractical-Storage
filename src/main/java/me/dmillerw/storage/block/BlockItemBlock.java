@@ -1,8 +1,6 @@
 package me.dmillerw.storage.block;
 
-import me.dmillerw.storage.block.property.UnlistedPropertyBoolean;
-import me.dmillerw.storage.block.property.UnlistedPropertyNumber;
-import me.dmillerw.storage.block.property.UnlistedPropertyString;
+import me.dmillerw.storage.block.property.UnlistedItemStack;
 import me.dmillerw.storage.block.tile.TileItemBlock;
 import me.dmillerw.storage.lib.ModInfo;
 import net.minecraft.block.Block;
@@ -19,6 +17,7 @@ import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.property.ExtendedBlockState;
@@ -31,9 +30,7 @@ import javax.annotation.Nullable;
  */
 public class BlockItemBlock extends Block implements ITileEntityProvider {
 
-    public static final UnlistedPropertyBoolean IS_BLOCK = new UnlistedPropertyBoolean("is_block");
-    public static final UnlistedPropertyString RENDER_VALUE = new UnlistedPropertyString("item_block");
-    public static final UnlistedPropertyNumber RENDER_VALUE_META = new UnlistedPropertyNumber("item_block_meta");
+    public static final UnlistedItemStack ITEM = new UnlistedItemStack("item");
 
     public BlockItemBlock() {
         super(Material.ROCK);
@@ -69,8 +66,16 @@ public class BlockItemBlock extends Block implements ITileEntityProvider {
             if (tile != null && tile instanceof TileItemBlock)
                 ((TileItemBlock) tile).getDrop();
         }
+    }
 
-        super.breakBlock(worldIn, pos, state);
+    @Override
+    public ItemStack getPickBlock(IBlockState state, RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
+        TileEntity tile = world.getTileEntity(pos);
+        if (tile != null && tile instanceof TileItemBlock) {
+            return ((TileItemBlock) tile).item;
+        }
+
+        return super.getPickBlock(state, target, world, pos, player);
     }
 
     @Override
@@ -80,11 +85,12 @@ public class BlockItemBlock extends Block implements ITileEntityProvider {
                 TileEntity tile = worldIn.getTileEntity(pos);
                 if (tile != null) {
                     ItemStack drop = ((TileItemBlock)tile).getDrop();
-                    if (drop != null && drop.stackSize > 0)
+                    if (drop != null) {
                         InventoryHelper.spawnItemStack(worldIn, pos.getX(), pos.getY(), pos.getZ(), drop);
-                }
+                    }
 
-                worldIn.setBlockToAir(pos);
+                    worldIn.setBlockToAir(pos);
+                }
 
                 return true;
             } else {
@@ -126,7 +132,7 @@ public class BlockItemBlock extends Block implements ITileEntityProvider {
 
     @Override
     protected BlockStateContainer createBlockState() {
-        return new ExtendedBlockState(this, new IProperty[0], new IUnlistedProperty[]{IS_BLOCK, RENDER_VALUE, RENDER_VALUE_META});
+        return new ExtendedBlockState(this, new IProperty[0], new IUnlistedProperty[]{ITEM});
     }
 
     @Override
