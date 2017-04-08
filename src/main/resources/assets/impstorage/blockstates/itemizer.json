@@ -1,5 +1,7 @@
 {
   "variants": {
+    "facing=up": { "model": "impstorage:itemizer", "x": 270 },
+    "facing=down": { "model": "impstorage:itemizer", "x": 90 },
     "facing=north": { "model": "impstorage:itemizer" },
     "facing=south": { "model": "impstorage:itemizer", "y": 180 },
     "facing=west":  { "model": "impstorage:itemizer", "y": 270 },
