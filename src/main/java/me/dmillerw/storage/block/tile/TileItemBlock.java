@@ -25,9 +25,11 @@ public class TileItemBlock extends TileCore {
         if (controllerPos != null)
             compound.setLong("controller", controllerPos.toLong());
 
-        NBTTagCompound tag = new NBTTagCompound();
-        item.writeToNBT(tag);
-        compound.setTag("item", tag);
+        if (item != null) {
+            NBTTagCompound tag = new NBTTagCompound();
+            item.writeToNBT(tag);
+            compound.setTag("item", tag);
+        }
     }
 
     @Override
