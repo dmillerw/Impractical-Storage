@@ -17,12 +17,7 @@ public class BaseModelLoader implements ICustomModelLoader {
 
     private static Map<Predicate<String>, IModel> modelRegistry = Maps.newHashMap();
     static {
-        modelRegistry.put((new Predicate<String>() {
-            @Override
-            public boolean test(String path) {
-                return path.contains("block") && path.contains("item_block");
-            }
-        }), new ItemBlockModel());
+        modelRegistry.put((path -> path.contains("block") && path.contains("item_block")), new FakeBlockModel.Model());
     }
 
     @Override

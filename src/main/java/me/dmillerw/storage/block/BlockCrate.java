@@ -1,5 +1,6 @@
 package me.dmillerw.storage.block;
 
+import me.dmillerw.storage.block.property.UnlistedItemStack;
 import me.dmillerw.storage.lib.ModInfo;
 import me.dmillerw.storage.lib.ModTab;
 import net.minecraft.block.Block;
@@ -9,10 +10,18 @@ import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
+import net.minecraftforge.common.property.ExtendedBlockState;
+import net.minecraftforge.common.property.IExtendedBlockState;
+import net.minecraftforge.common.property.IUnlistedProperty;
 
 /**
  * @author dmillerw
@@ -20,6 +29,7 @@ import net.minecraft.util.NonNullList;
 public class BlockCrate extends Block {
 
     public static final PropertyEnum<EnumType> VARIANT = PropertyEnum.create("variant", EnumType.class);
+    public static final UnlistedItemStack ITEM = new UnlistedItemStack("item");
 
     public BlockCrate() {
         super(Material.WOOD);
@@ -57,8 +67,38 @@ public class BlockCrate extends Block {
     }
 
     @Override
+    public boolean isOpaqueCube(IBlockState state) {
+        return true;
+    }
+
+    @Override
+    public boolean isFullCube(IBlockState state) {
+        return true;
+    }
+
+    @Override
+    public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
+        return true;
+    }
+
+    @Override
+    public boolean canRenderInLayer(IBlockState state, BlockRenderLayer layer) {
+        return layer == BlockRenderLayer.SOLID || layer == BlockRenderLayer.CUTOUT;
+    }
+
+    @Override
+    public IBlockState getExtendedState(IBlockState state, IBlockAccess world, BlockPos pos) {
+//        TileEntity tile = world.getTileEntity(pos);
+//        if (tile != null && tile instanceof TileCrate) {
+            return ((IExtendedBlockState)state).withProperty(ITEM, new ItemStack(Blocks.PLANKS));
+//        }
+
+//        return super.getExtendedState(state, world, pos);
+    }
+
+    @Override
     protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, new IProperty[] { VARIANT });
+        return new ExtendedBlockState(this, new IProperty[] { VARIANT }, new IUnlistedProperty[] { ITEM });
     }
 
     public static enum EnumType implements IStringSerializable {

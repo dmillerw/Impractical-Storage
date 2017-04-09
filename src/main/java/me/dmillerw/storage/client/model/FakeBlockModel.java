@@ -20,20 +20,22 @@ import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.MinecraftForgeClient;
+import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.common.model.IModelState;
+import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import org.lwjgl.util.vector.Vector3f;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 /**
  * Created by dmillerw
  */
-public class ItemBlockBakedModel implements IBakedModel {
-
-    private static final List<BakedQuad> EMPTY_LIST = Lists.newArrayList();
+public class FakeBlockModel implements IBakedModel {
 
     private static BlockRendererDispatcher rendererDispatcher() {
         return Minecraft.getMinecraft().getBlockRendererDispatcher();
@@ -48,9 +50,9 @@ public class ItemBlockBakedModel implements IBakedModel {
     private VertexFormat format;
     private TextureAtlasSprite wood;
 
-    public ItemBlockBakedModel(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+    public FakeBlockModel(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
         this.format = format;
-        this.wood = bakedTextureGetter.apply(new ResourceLocation("quadrum:blocks/crate_side"));
+        this.wood = bakedTextureGetter.apply(new ResourceLocation("quadrum:blocks/crate_wood"));
     }
 
     @Override
@@ -163,5 +165,28 @@ public class ItemBlockBakedModel implements IBakedModel {
     @Override
     public ItemOverrideList getOverrides() {
         return ItemOverrideList.NONE;
+    }
+
+    public static class Model implements IModel {
+
+        @Override
+        public IBakedModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+            return new FakeBlockModel(state, format, bakedTextureGetter);
+        }
+
+        @Override
+        public Collection<ResourceLocation> getDependencies() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public Collection<ResourceLocation> getTextures() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public IModelState getDefaultState() {
+            return TRSRTransformation.identity();
+        }
     }
 }

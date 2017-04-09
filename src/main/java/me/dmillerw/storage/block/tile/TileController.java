@@ -3,13 +3,13 @@ package me.dmillerw.storage.block.tile;
 import me.dmillerw.storage.block.BlockController;
 import me.dmillerw.storage.block.BlockPhantom;
 import me.dmillerw.storage.block.ModBlocks;
+import me.dmillerw.storage.block.tile.inv.ControllerItemHandler;
 import me.dmillerw.storage.lib.data.SortingType;
 import me.dmillerw.storage.proxy.CommonProxy;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.inventory.ItemStackHelper;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -23,10 +23,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.items.CapabilityItemHandler;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayDeque;
 import java.util.Random;
@@ -47,141 +44,11 @@ public class TileController extends TileCore implements ITickable {
     private static final long Y_MASK = (1L << NUM_Y_BITS) - 1L;
     private static final long Z_MASK = (1L << NUM_Z_BITS) - 1L;
 
-    private static final int MAX_BLOCK_STACK_SIZE = 1;
-    private static final int MAX_ITEM_STACK_SIZE = 16;
-
     public static long getLongFromPosition(int x, int y, int z) {
         return ((long) x & X_MASK) << X_SHIFT | ((long) y & Y_MASK) << Y_SHIFT | ((long) z & Z_MASK) << 0;
     }
 
-    private static int getMaxStackSize(ItemStack itemStack) {
-        return itemStack.getItem() instanceof ItemBlock ? MAX_BLOCK_STACK_SIZE : MAX_ITEM_STACK_SIZE;
-    }
-
     public static boolean INVENTORY_BLOCK = false;
-
-    public static class ItemHandler implements IItemHandler {
-
-        private TileController controller;
-
-        private ItemHandler(TileController controller) {
-            this.controller = controller;
-        }
-
-        @Override
-        public int getSlots() {
-            return controller.totalSize;
-        }
-
-        @Nonnull
-        @Override
-        public ItemStack getStackInSlot(int slot) {
-            return controller.getStackInSlot(slot);
-        }
-
-        @Nonnull
-        @Override
-        public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
-            if (INVENTORY_BLOCK)
-                return ItemStack.EMPTY;
-
-            if (stack.isEmpty())
-                return ItemStack.EMPTY;
-
-            ItemStack stackInSlot = controller.getStackInSlot(slot);
-
-            int m;
-            if (!stackInSlot.isEmpty()) {
-                if (!ItemHandlerHelper.canItemStacksStack(stack, stackInSlot))
-                    return stack;
-
-                m = Math.min(stack.getMaxStackSize(), getMaxStackSize(stackInSlot)) - stackInSlot.getCount();
-
-                if (stack.getCount() <= m) {
-                    if (!simulate) {
-                        ItemStack copy = stack.copy();
-                        copy.grow(stackInSlot.getCount());
-                        controller.setInventorySlotContents(slot, copy, false, true, true);
-                        controller.markDirty();
-                    }
-
-                    return ItemStack.EMPTY;
-                } else {
-                    // copy the stack to not modify the original one
-                    stack = stack.copy();
-                    if (!simulate) {
-                        ItemStack copy = stack.splitStack(m);
-                        copy.grow(stackInSlot.getCount());
-                        controller.setInventorySlotContents(slot, copy, false, true, true);
-                        controller.markDirty();
-                        return stack;
-                    } else {
-                        stack.shrink(m);
-                        return stack;
-                    }
-                }
-            } else {
-                m = Math.min(stack.getMaxStackSize(), getMaxStackSize(stack));
-                if (m < stack.getCount()) {
-                    // copy the stack to not modify the original one
-                    stack = stack.copy();
-                    if (!simulate) {
-                        controller.setInventorySlotContents(slot, stack.splitStack(m), false, true, true);
-                        controller.markDirty();
-                        return stack;
-                    } else {
-                        stack.shrink(m);
-                        return stack;
-                    }
-                } else {
-                    if (!simulate) {
-                        controller.setInventorySlotContents(slot, stack, false, true, true);
-                        controller.markDirty();
-                    }
-                    return ItemStack.EMPTY;
-                }
-            }
-        }
-
-        @Nonnull
-        @Override
-        public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if (INVENTORY_BLOCK)
-                return ItemStack.EMPTY;
-
-            if (amount == 0)
-                return ItemStack.EMPTY;
-
-            ItemStack stackInSlot = controller.getStackInSlot(slot);
-
-            if (stackInSlot.isEmpty())
-                return ItemStack.EMPTY;
-
-            if (simulate) {
-                if (stackInSlot.getCount() < amount) {
-                    return stackInSlot.copy();
-                } else {
-                    ItemStack copy = stackInSlot.copy();
-                    copy.setCount(amount);
-                    return copy;
-                }
-            } else {
-                int m = Math.min(stackInSlot.getCount(), amount);
-                ItemStack old = controller.getStackInSlot(slot);
-                ItemStack decr = old.splitStack(m);
-
-                controller.setInventorySlotContents(slot, old, true, true, true);
-                controller.markDirty();
-
-                return decr;
-            }
-        }
-
-        @Override
-        public int getSlotLimit(int slot) {
-            return 64;
-        }
-    }
 
     private static class QueueElement {
 
@@ -191,7 +58,7 @@ public class TileController extends TileCore implements ITickable {
 
     private Random random = new Random();
 
-    public ItemHandler itemHandler = new ItemHandler(this);
+    public ControllerItemHandler itemHandler = new ControllerItemHandler(this);
     public NonNullList<ItemStack> inventory = NonNullList.create();
 
     public BlockPos origin = null;
@@ -462,11 +329,11 @@ public class TileController extends TileCore implements ITickable {
                 for (int y = 0; y < height; y++) {
                     for (int z = 0; z < zLength; z++) {
                         for (int x = 0; x < xLength; x++) {
-                            if (!worldOcclusionMap[y][x][z]) {
-                                BlockPos pos = new BlockPos(x, y, z).add(origin);
-                                IBlockState state = world.getBlockState(pos);
-                                Block block = state.getBlock();
+                            BlockPos pos = new BlockPos(x, y, z).add(origin);
+                            IBlockState state = world.getBlockState(pos);
+                            Block block = state.getBlock();
 
+                            if (!worldOcclusionMap[y][x][z]) {
                                 if (block != ModBlocks.controller && block != ModBlocks.item_block && !world.isAirBlock(pos)) {
                                     ItemStack stack = new ItemStack(block, 1, block.damageDropped(state));
                                     world.setBlockToAir(pos);
@@ -811,7 +678,7 @@ public class TileController extends TileCore implements ITickable {
         for (int j = 0; j < totalSize; j++) {
             ItemStack stack = getStackInSlot(j);
             if (!stack.isEmpty()) {
-                f += (float) stack.getCount() / (float) Math.min(getMaxStackSize(stack), stack.getMaxStackSize());
+                f += (float) stack.getCount() / (float) Math.min(ControllerItemHandler.getMaxStackSize(stack), stack.getMaxStackSize());
                 ++i;
             }
         }

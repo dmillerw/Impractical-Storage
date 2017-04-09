@@ -2,9 +2,12 @@ package me.dmillerw.storage.client.event;
 
 import me.dmillerw.storage.block.BlockCrate;
 import me.dmillerw.storage.block.ModBlocks;
+import me.dmillerw.storage.client.model.CrateModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.renderer.block.statemap.StateMap;
 import net.minecraft.item.Item;
 import net.minecraft.util.IStringSerializable;
+import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.Mod;
@@ -17,6 +20,13 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 public class ClientRegistryHandler {
 
     @SubscribeEvent
+    public static void onModelBake(ModelBakeEvent event) {
+        event.getModelRegistry().putObject(
+                new ModelResourceLocation("impstorage:crate", "normal"),
+                new CrateModel());
+    }
+
+    @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event) {
         registerItemModel(ModBlocks.controller_item);
         registerItemModel(ModBlocks.controller_interface_item);
@@ -25,6 +35,7 @@ public class ClientRegistryHandler {
         registerItemModel(ModBlocks.gravity_inducer_item);
         registerItemModel(ModBlocks.itemizer_item);
 
+        ModelLoader.setCustomStateMapper(ModBlocks.crate, new StateMap.Builder().ignore(BlockCrate.VARIANT).build());
         for (BlockCrate.EnumType type : BlockCrate.EnumType.values()) {
             registerItemModel(ModBlocks.crate_item, "variant", type);
         }
