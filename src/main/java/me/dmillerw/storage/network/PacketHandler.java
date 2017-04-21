@@ -12,7 +12,7 @@ import net.minecraftforge.fml.relauncher.Side;
 public class PacketHandler {
 
     public static final SimpleNetworkWrapper INSTANCE = NetworkRegistry.INSTANCE.newSimpleChannel(ModInfo.ID);
-    static {
+    public static void initialize() {
         INSTANCE.registerMessage(SControllerConfig.Handler.class, SControllerConfig.class, 1, Side.SERVER);
     }
 }
