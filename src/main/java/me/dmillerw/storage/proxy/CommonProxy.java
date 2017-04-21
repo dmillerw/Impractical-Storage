@@ -8,6 +8,7 @@ import me.dmillerw.storage.block.tile.TileItemBlock;
 import me.dmillerw.storage.core.BlockOverrides;
 import me.dmillerw.storage.core.handler.GuiHandler;
 import me.dmillerw.storage.lib.ModInfo;
+import me.dmillerw.storage.network.PacketHandler;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -50,6 +51,7 @@ public class CommonProxy implements IProxy {
     public void preInit(FMLPreInitializationEvent event) {
         BlockOverrides.initialize();
 
+        PacketHandler.initialize();
         GuiHandler.register();
 
         GameRegistry.registerTileEntity(TileItemBlock.class, ModInfo.ID + ":item_block");

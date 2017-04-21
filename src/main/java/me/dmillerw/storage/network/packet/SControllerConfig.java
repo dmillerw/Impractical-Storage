@@ -5,10 +5,10 @@ import me.dmillerw.storage.block.BlockController;
 import me.dmillerw.storage.block.tile.TileController;
 import me.dmillerw.storage.lib.data.SortingType;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -107,7 +107,7 @@ public class SControllerConfig implements IMessage {
 
         @Override
         public IMessage onMessage(SControllerConfig message, MessageContext ctx) {
-            Minecraft.getMinecraft().addScheduledTask(() -> {
+            FMLCommonHandler.instance().getMinecraftServerInstance().addScheduledTask(() -> {
                 World world = ctx.getServerHandler().playerEntity.worldObj;
                 IBlockState state = world.getBlockState(message.destination);
                 TileEntity tile = world.getTileEntity(message.destination);
