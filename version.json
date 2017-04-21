@@ -1,9 +1,10 @@
 {
   "homepage": "https://minecraft.curseforge.com/projects/impractical-storage",
   "promos": {
-    "1.10.2-latest": "1.4.1"
+    "1.10.2-latest": "1.4.2"
   },
   "1.10.2": {
+    "1.4.2": "Fixed mod not working on servers",
     "1.4.1": "Fixed crash when itemizing block (#40)\nFixed blocks not using metadata when rendering\nFixed items being lost when extracted (#35)",
     "1.4": "[Added] Blockvayors\n[Added] Gravity Inducer\n[Added] Itemizer\nBug Fixes"
   }
