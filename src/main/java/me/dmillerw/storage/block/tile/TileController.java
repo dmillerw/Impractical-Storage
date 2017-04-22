@@ -762,10 +762,17 @@ public class TileController extends TileCore implements ITickable {
     private boolean setBlock(int slot, ItemStack itemStack) {
         TileItemBlock.DROPS = false;
 
+        if (slot == -1)
+            return false;
+
         if (slot >= slotToWorldMap.length)
             return false;
 
-        BlockPos pos = BlockPos.fromLong(slotToWorldMap[slot]);
+        long lpos = slotToWorldMap[slot];
+        if (lpos == -1)
+            return false;
+
+        BlockPos pos = BlockPos.fromLong(lpos);
 
         int x = pos.getX();
         int y = pos.getY();
