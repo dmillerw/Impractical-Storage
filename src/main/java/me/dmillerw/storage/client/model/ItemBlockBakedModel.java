@@ -55,14 +55,31 @@ public class ItemBlockBakedModel implements IBakedModel {
 
     @Override
     public List<BakedQuad> getQuads(@Nullable IBlockState state, @Nullable EnumFacing side, long rand) {
+        boolean error = false;
         List<BakedQuad> quads = Lists.newArrayList();
 
-        try {
-            quads = safeGetQuads(state, side, rand);
-        } catch (Exception ex) {
-            IExtendedBlockState extendedBlockState = (IExtendedBlockState) state;
-            renderBlacklist.add(extendedBlockState.getValue(BlockItemBlock.ITEM).getItem().getRegistryName().toString());
+        IExtendedBlockState extendedBlockState = (IExtendedBlockState) state;
+        ItemStack item = extendedBlockState.getValue(BlockItemBlock.ITEM);
 
+        if (item == null)
+            error = true;
+        else if (item.isEmpty())
+            error = true;
+        else if (item.getItem() == null)
+            error = true;
+        else if (item.getItem().getRegistryName() == null)
+            error = true;
+
+        if (!error) {
+            try {
+                quads = safeGetQuads(state, side, rand);
+            } catch (Exception ex) {
+                renderBlacklist.add(extendedBlockState.getValue(BlockItemBlock.ITEM).getItem().getRegistryName().toString());
+                error = true;
+            }
+        }
+
+        if (error) {
             IBlockState s = ModBlocks.crate.getDefaultState();
             quads = rendererDispatcher().getModelForState(s).getQuads(s, side, rand);
         }
