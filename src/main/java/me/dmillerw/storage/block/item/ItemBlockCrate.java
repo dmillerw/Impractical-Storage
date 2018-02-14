@@ -2,11 +2,14 @@ package me.dmillerw.storage.block.item;
 
 import me.dmillerw.storage.block.BlockCrate;
 import net.minecraft.block.Block;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.translation.I18n;
+import net.minecraft.world.World;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -21,7 +24,7 @@ public class ItemBlockCrate extends ItemBlock {
     }
 
     @Override
-    public void addInformation(ItemStack stack, EntityPlayer playerIn, List<String> tooltip, boolean advanced) {
+    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag advanced) {
         BlockCrate.EnumType type = BlockCrate.EnumType.fromMetadata(stack.getMetadata());
         if (type.getBlockStorage() > 0) tooltip.add(I18n.translateToLocal("tooltip.capacity.block") + ": " + type.getBlockStorage());
         if (type.getItemStorage() > 0) tooltip.add(I18n.translateToLocal("tooltip.capacity.item") + ": " + type.getItemStorage());

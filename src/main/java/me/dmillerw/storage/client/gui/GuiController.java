@@ -132,27 +132,27 @@ public class GuiController extends GuiScreen {
 
         buttonList.stream().filter((b) -> b instanceof GuiButtonArrow).forEach((b) -> b.enabled = this.isInventoryEmpty);
 
-        boundX = new GuiTextField(0, fontRendererObj, guiLeft + 9, guiTop + 40, 29, 15);
+        boundX = new GuiTextField(0, fontRenderer, guiLeft + 9, guiTop + 40, 29, 15);
         boundX.setText(Integer.toString(x));
         boundX.setValidator(NUMBER_VALIDATOR);
 
-        boundY = new GuiTextField(1, fontRendererObj, guiLeft + 44, guiTop + 40, 29, 15);
+        boundY = new GuiTextField(1, fontRenderer, guiLeft + 44, guiTop + 40, 29, 15);
         boundY.setText(Integer.toString(y));
         boundY.setValidator(NUMBER_VALIDATOR);
 
-        boundZ = new GuiTextField(2, fontRendererObj, guiLeft + 79, guiTop + 40, 29, 15);
+        boundZ = new GuiTextField(2, fontRenderer, guiLeft + 79, guiTop + 40, 29, 15);
         boundZ.setText(Integer.toString(z));
         boundZ.setValidator(NUMBER_VALIDATOR);
 
-        offsetX = new GuiTextField(3, fontRendererObj, guiLeft + 9, guiTop + 111, 29, 15);
+        offsetX = new GuiTextField(3, fontRenderer, guiLeft + 9, guiTop + 111, 29, 15);
         offsetX.setText(Integer.toString(offX));
         offsetX.setValidator(NUMBER_VALIDATOR);
 
-        offsetY = new GuiTextField(4, fontRendererObj, guiLeft + 44, guiTop + 111, 29, 15);
+        offsetY = new GuiTextField(4, fontRenderer, guiLeft + 44, guiTop + 111, 29, 15);
         offsetY.setText(Integer.toString(offY));
         offsetY.setValidator(NUMBER_VALIDATOR);
 
-        offsetZ = new GuiTextField(5, fontRendererObj, guiLeft + 79, guiTop + 111, 29, 15);
+        offsetZ = new GuiTextField(5, fontRenderer, guiLeft + 79, guiTop + 111, 29, 15);
         offsetZ.setText(Integer.toString(offZ));
         offsetZ.setValidator(NUMBER_VALIDATOR);
     }
@@ -339,9 +339,9 @@ public class GuiController extends GuiScreen {
         Minecraft.getMinecraft().renderEngine.bindTexture(GUI_TEXTURE);
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, GUI_WIDTH, GUI_HEIGHT);
 
-        fontRendererObj.drawString(I18n.translateToLocal("gui.label.bounds"), guiLeft + 8, guiTop + 10, 4210752, false);
-        fontRendererObj.drawString(I18n.translateToLocal("gui.label.offset"), guiLeft + 8, guiTop + 81, 4210752, false);
-        fontRendererObj.drawString(I18n.translateToLocal("gui.label.other"), guiLeft + 8, guiTop + 152, 4210752, false);
+        fontRenderer.drawString(I18n.translateToLocal("gui.label.bounds"), guiLeft + 8, guiTop + 10, 4210752, false);
+        fontRenderer.drawString(I18n.translateToLocal("gui.label.offset"), guiLeft + 8, guiTop + 81, 4210752, false);
+        fontRenderer.drawString(I18n.translateToLocal("gui.label.other"), guiLeft + 8, guiTop + 152, 4210752, false);
 
         super.drawScreen(mouseX, mouseY, partialTicks);
 

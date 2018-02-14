@@ -1,0 +1,19 @@
+{
+  "result": {
+    "item": "impstorage:itemizer",
+    "count": 1
+  },
+  "pattern": [
+    "DR"
+  ],
+  "type": "forge:ore_shaped",
+  "key": {
+    "D": {
+      "item": "minecraft:dispenser"
+    },
+    "R": {
+      "type": "forge:ore_dict",
+      "ore": "dustRedstone"
+    }
+  }
+}

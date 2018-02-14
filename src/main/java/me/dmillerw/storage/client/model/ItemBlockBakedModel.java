@@ -1,6 +1,5 @@
 package me.dmillerw.storage.client.model;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import me.dmillerw.storage.block.BlockItemBlock;
@@ -22,11 +21,14 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.property.IExtendedBlockState;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.util.vector.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * Created by dmillerw
@@ -35,10 +37,12 @@ public class ItemBlockBakedModel implements IBakedModel {
 
     private static final List<BakedQuad> EMPTY_LIST = Lists.newArrayList();
 
+    @SideOnly(Side.CLIENT)
     private static BlockRendererDispatcher rendererDispatcher() {
         return Minecraft.getMinecraft().getBlockRendererDispatcher();
     }
 
+    @SideOnly(Side.CLIENT)
     private static RenderItem renderItem() {
         return Minecraft.getMinecraft().getRenderItem();
     }
@@ -53,6 +57,7 @@ public class ItemBlockBakedModel implements IBakedModel {
         this.wood = bakedTextureGetter.apply(new ResourceLocation("quadrum:blocks/crate_side"));
     }
 
+    @SideOnly(Side.CLIENT)
     @Override
     public List<BakedQuad> getQuads(@Nullable IBlockState state, @Nullable EnumFacing side, long rand) {
         boolean error = false;
@@ -87,6 +92,7 @@ public class ItemBlockBakedModel implements IBakedModel {
         return quads;
     }
 
+    @SideOnly(Side.CLIENT)
     private List<BakedQuad> safeGetQuads(@Nullable IBlockState state, @Nullable EnumFacing side, long rand) {
         IExtendedBlockState extendedBlockState = (IExtendedBlockState) state;
 

@@ -1,0 +1,25 @@
+{
+  "result": {
+    "item": "impstorage:controller",
+    "count": 1
+  },
+  "pattern": [
+    " I ",
+    " C ",
+    " D "
+  ],
+  "type": "forge:ore_shaped",
+  "key": {
+    "I": {
+      "type": "forge:ore_dict",
+      "ore": "ingotIron"
+    },
+    "C": {
+      "type": "forge:ore_dict",
+      "ore": "chest"
+    },
+    "D": {
+      "item": "minecraft:dispenser"
+    }
+  }
+}

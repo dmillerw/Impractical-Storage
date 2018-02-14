@@ -2,11 +2,14 @@ package me.dmillerw.storage.block.item;
 
 import me.dmillerw.storage.block.BlockPhantom;
 import net.minecraft.block.Block;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.translation.I18n;
+import net.minecraft.world.World;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -21,7 +24,7 @@ public class ItemBlockPhantom extends ItemBlock {
     }
 
     @Override
-    public void addInformation(ItemStack stack, EntityPlayer playerIn, List<String> tooltip, boolean advanced) {
+    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag advanced) {
         BlockPhantom.EnumType type = BlockPhantom.EnumType.fromMetadata(stack.getMetadata());
         tooltip.add(I18n.translateToLocal("tooltip.phantom.type." + type.getName()));
     }

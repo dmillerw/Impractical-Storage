@@ -12,16 +12,22 @@ import me.dmillerw.storage.network.PacketHandler;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.IRecipe;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.oredict.ShapedOreRecipe;
+import net.minecraftforge.registries.IForgeRegistry;
 
 /**
  * @author dmillerw
  */
+@Mod.EventBusSubscriber
 public class CommonProxy implements IProxy {
 
     public static final String CATEGORY_BOUNDS = "bounds";
@@ -58,43 +64,6 @@ public class CommonProxy implements IProxy {
         GameRegistry.registerTileEntity(TileController.class, ModInfo.ID + ":controller");
         GameRegistry.registerTileEntity(TileControllerInterface.class, ModInfo.ID + ":controller_interface");
         GameRegistry.registerTileEntity(TileConveyor.class, ModInfo.ID + ":conveyor");
-
-        // Controller - Crafting Recipe
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(ModBlocks.controller),
-                " I ",
-                " C ",
-                " D ",
-                'I', "ingotIron",
-                'C', "chest",
-                'D', Blocks.DISPENSER));
-
-        // Controller Interface - Crafting Recipe
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(ModBlocks.controller_interface),
-                "IRI",
-                " H ",
-                'I', "ingotIron",
-                'R', Items.REDSTONE,
-                'H', Blocks.HOPPER));
-
-        // Conveyor - Crafting Recipe
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(ModBlocks.conveyor),
-                " D ",
-                "IRI",
-                'D', "dyeBlack",
-                'I', "ingotIron",
-                'R', Items.REDSTONE));
-
-        // Gravity Inducer - Crafting Recipe
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(ModBlocks.gravity_inducer),
-                "DL",
-                'D', Blocks.DISPENSER,
-                'L', new ItemStack(Items.DYE, 1, 4)));
-
-        // Itemizer - Crafting Recipe
-        GameRegistry.addRecipe(new ShapedOreRecipe(new ItemStack(ModBlocks.itemizer),
-                "DR",
-                'D', Blocks.DISPENSER,
-                'R', Items.REDSTONE));
     }
 
     @Override

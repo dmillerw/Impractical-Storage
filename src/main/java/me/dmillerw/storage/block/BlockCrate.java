@@ -50,9 +50,9 @@ public class BlockCrate extends Block {
     }
 
     @Override
-    public void getSubBlocks(Item itemIn, CreativeTabs tab, NonNullList<ItemStack> list) {
+    public void getSubBlocks(CreativeTabs tab, NonNullList<ItemStack> list) {
         for (EnumType type : EnumType.values()) {
-            list.add(new ItemStack(itemIn, 1, type.meta));
+            list.add(new ItemStack(this, 1, type.meta));
         }
     }
 
