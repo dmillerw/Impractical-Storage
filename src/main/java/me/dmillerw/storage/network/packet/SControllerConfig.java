@@ -108,7 +108,7 @@ public class SControllerConfig implements IMessage {
         @Override
         public IMessage onMessage(SControllerConfig message, MessageContext ctx) {
             FMLCommonHandler.instance().getMinecraftServerInstance().addScheduledTask(() -> {
-                World world = ctx.getServerHandler().playerEntity.world;
+                World world = ctx.getServerHandler().player.world;
                 IBlockState state = world.getBlockState(message.destination);
                 TileEntity tile = world.getTileEntity(message.destination);
                 if (tile != null && tile instanceof TileController) {

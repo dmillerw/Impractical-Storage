@@ -1,0 +1,24 @@
+{
+  "result": {
+    "item": "impstorage:controller_interface",
+    "count": 1
+  },
+  "pattern": [
+    "IRI",
+    " H "
+  ],
+  "type": "forge:ore_shaped",
+  "key": {
+    "I": {
+      "type": "forge:ore_dict",
+      "ore": "ingotIron"
+    },
+    "R": {
+      "type": "forge:ore_dict",
+      "ore": "dustRedstone"
+    },
+    "H": {
+      "item": "minecraft:hopper"
+    }
+  }
+}

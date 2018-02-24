@@ -18,7 +18,7 @@ public class RenderTileConveyor extends TileEntitySpecialRenderer<TileConveyor> 
     private BlockRendererDispatcher blockRenderer;
 
     @Override
-    public void renderTileEntityAt(TileConveyor te, double x, double y, double z, float partialTicks, int destroyStage) {
+    public void render(TileConveyor te, double x, double y, double z, float partialTicks, int destroyStage, float _p_render_8) {
         if (blockRenderer == null) blockRenderer = Minecraft.getMinecraft().getBlockRendererDispatcher();
 
         BlockPos blockpos = te.getPos();
@@ -27,7 +27,7 @@ public class RenderTileConveyor extends TileEntitySpecialRenderer<TileConveyor> 
             return;
 
         Tessellator tessellator = Tessellator.getInstance();
-        VertexBuffer vertexbuffer = tessellator.getBuffer();
+        BufferBuilder vertexbuffer = tessellator.getBuffer();
 
         this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
@@ -56,7 +56,7 @@ public class RenderTileConveyor extends TileEntitySpecialRenderer<TileConveyor> 
         RenderHelper.enableStandardItemLighting();
     }
 
-    private boolean renderStateModel(BlockPos pos, IBlockState state, VertexBuffer buffer, World p_188186_4_, boolean checkSides) {
+    private boolean renderStateModel(BlockPos pos, IBlockState state, BufferBuilder buffer, World p_188186_4_, boolean checkSides) {
         return this.blockRenderer.getBlockModelRenderer().renderModel(p_188186_4_, this.blockRenderer.getModelForState(state), state, pos, buffer, checkSides);
     }
 }

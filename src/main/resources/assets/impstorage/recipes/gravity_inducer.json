@@ -1,0 +1,19 @@
+{
+  "result": {
+    "item": "impstorage:gravity_inducer",
+    "count": 1
+  },
+  "pattern": [
+    "DL"
+  ],
+  "type": "forge:ore_shaped",
+  "key": {
+    "D": {
+      "item": "minecraft:dispenser"
+    },
+    "L": {
+      "type": "forge:ore_dict",
+      "ore": "gemLapis"
+    }
+  }
+}

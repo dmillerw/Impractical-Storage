@@ -11,11 +11,14 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayDeque;
 
 public class ControllerBoundsRenderer {
 
+    @SideOnly(Side.CLIENT)
     @SubscribeEvent
     public static void onWorldRenderLast(RenderWorldLastEvent event) {
         Minecraft mc = Minecraft.getMinecraft();
@@ -45,8 +48,8 @@ public class ControllerBoundsRenderer {
         Chunk chunks[] = new Chunk[9];
 
         chunks[4] = world.getChunkFromBlockCoords(new BlockPos(x1, 1, z1));
-        int cX = chunks[4].xPosition;
-        int cZ = chunks[4].zPosition;
+        int cX = chunks[4].x;
+        int cZ = chunks[4].z;
 
         chunks[0] = world.getChunkFromChunkCoords(cX - 1, cZ - 1);
         chunks[1] = world.getChunkFromChunkCoords(cX, cZ - 1);
