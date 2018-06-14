@@ -13,7 +13,7 @@ import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-
+import org.lwjgl.opengl.GL11;
 import java.util.ArrayDeque;
 
 public class ControllerBoundsRenderer {
@@ -25,20 +25,20 @@ public class ControllerBoundsRenderer {
         if (mc.player == null) {
             return;
         }
-
-        GlStateManager.pushMatrix();
+		GlStateManager.pushMatrix();
+		GlStateManager.disableTexture2D();
+		GL11.glPushAttrib(GL11.GL_LIGHTING_BIT);
+		GlStateManager.disableLighting();
+		GlStateManager.enableBlend();
+		GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		
         Entity entity = mc.getRenderViewEntity();
 
         double posX = entity.lastTickPosX + (entity.posX - entity.lastTickPosX) * event.getPartialTicks();
         double posY = entity.lastTickPosY + (entity.posY - entity.lastTickPosY) * event.getPartialTicks();
         double posZ = entity.lastTickPosZ + (entity.posZ - entity.lastTickPosZ) * event.getPartialTicks();
 
-        GlStateManager.translate(-posX, -posY, -posZ);
-
-        GlStateManager.disableTexture2D();
-        GlStateManager.enableBlend();
-        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        GlStateManager.disableLighting();
+        GlStateManager.translate(-posX, -posY, -posZ);        
         GlStateManager.glLineWidth(2.5F);
 
         World world = entity.world;
@@ -87,10 +87,10 @@ public class ControllerBoundsRenderer {
             RenderGlobal.drawBoundingBox(start.getX(), start.getY(), start.getZ(), end.getX(), end.getY(), end.getZ(), 1, 1, 1, 1);
         }
 
-        GlStateManager.enableLighting();
-        GlStateManager.enableTexture2D();
-        GlStateManager.disableBlend();
-
-        GlStateManager.popMatrix();
+		GlStateManager.enableTexture2D();
+		GlStateManager.enableLighting();
+		GlStateManager.disableBlend();
+		GL11.glPopAttrib();
+		GlStateManager.popMatrix();
     }
 }
